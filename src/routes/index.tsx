@@ -235,6 +235,15 @@ function CatalogHome() {
                 Pedidos mínimos por caixa fechada. Solicite cotação direta pelo WhatsApp em cada produto.
               </p>
             </div>
+
+            <div className="hidden lg:flex justify-center pt-2">
+              <img
+                src={mascoteImg}
+                alt="Mascote M2i Comercial"
+                className="w-full max-w-[200px] h-auto select-none pointer-events-none"
+                loading="lazy"
+              />
+            </div>
           </div>
         </aside>
 
