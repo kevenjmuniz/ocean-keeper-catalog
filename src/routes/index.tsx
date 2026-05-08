@@ -272,21 +272,6 @@ function Grid({ children }: { children: React.ReactNode }) {
   );
 }
 
-function Chip({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
-  return (
-    <button
-      onClick={onClick}
-      className={
-        "shrink-0 rounded-full border px-4 py-1.5 text-xs font-medium transition-smooth " +
-        (active
-          ? "border-primary bg-primary text-primary-foreground shadow-soft"
-          : "border-border bg-background text-muted-foreground hover:border-foreground hover:text-foreground")
-      }
-    >
-      {label}
-    </button>
-  );
-}
 
 function SidebarItem({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
   return (
