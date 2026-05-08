@@ -192,11 +192,19 @@ function ProductDialog({
     e.preventDefault();
     setSaving(true);
     try {
-      const payload: any = {
-        ...form,
+      const payload = {
+        name: form.name,
         slug: form.slug || slugify(form.name),
+        description: form.description ?? null,
+        category_id: form.category_id ?? null,
+        subcategory: form.subcategory ?? null,
         weight_kg: form.weight_kg ? Number(form.weight_kg) : null,
+        unit: form.unit ?? null,
+        internal_code: form.internal_code ?? null,
         price: form.price ? Number(form.price) : null,
+        image_url: form.image_url ?? null,
+        is_active: !!form.is_active,
+        is_featured: !!form.is_featured,
       };
       if (form.id) {
         const { error } = await supabase.from("products").update(payload).eq("id", form.id);
