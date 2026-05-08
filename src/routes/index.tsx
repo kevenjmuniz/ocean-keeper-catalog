@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import { SlidersHorizontal, Layers, Filter } from "lucide-react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,13 +9,23 @@ import { WhatsAppFab } from "@/components/WhatsAppFab";
 import { ProductCard, type ProductCardData } from "@/components/ProductCard";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+  PaginationEllipsis,
+} from "@/components/ui/pagination";
 import lemeImg from "@/assets/leme.png";
 
-const PAGE_SIZE = 12;
+const PAGE_SIZE = 16;
 
 const searchSchema = z.object({
   category: z.string().optional(),
   q: z.string().optional(),
+  page: z.coerce.number().int().min(1).optional(),
 });
 
 export const Route = createFileRoute("/")({
@@ -36,11 +46,20 @@ function CatalogHome() {
   const navigate = Route.useNavigate();
   const [query, setQuery] = useState(search.q ?? "");
   const [debounced, setDebounced] = useState(query);
+  const page = search.page ?? 1;
 
   useEffect(() => {
     const t = setTimeout(() => setDebounced(query), 220);
     return () => clearTimeout(t);
   }, [query]);
+
+  // Reset page to 1 when search query (debounced) changes
+  useEffect(() => {
+    if ((search.q ?? "") !== debounced) {
+      navigate({ search: { ...search, q: debounced || undefined, page: undefined } });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debounced]);
 
   const { data: categories } = useQuery({
     queryKey: ["categories"],
@@ -55,12 +74,16 @@ function CatalogHome() {
   });
 
   const { data: counts } = useQuery({
-    queryKey: ["product-count", search.category],
+    queryKey: ["product-count", search.category, debounced],
     queryFn: async () => {
       let q = supabase.from("products").select("id", { count: "exact", head: true }).eq("is_active", true);
       if (search.category) {
         const cat = categories?.find((c) => c.slug === search.category);
         if (cat) q = q.eq("category_id", cat.id);
+      }
+      if (debounced.trim()) {
+        const term = `%${debounced.trim()}%`;
+        q = q.or(`name.ilike.${term},description.ilike.${term},internal_code.ilike.${term}`);
       }
       const { count } = await q;
       return count ?? 0;
@@ -68,11 +91,10 @@ function CatalogHome() {
     enabled: !search.category || !!categories,
   });
 
-  const productsQuery = useInfiniteQuery({
-    queryKey: ["catalog-products", search.category, debounced],
-    initialPageParam: 0,
-    queryFn: async ({ pageParam }) => {
-      const from = pageParam * PAGE_SIZE;
+  const productsQuery = useQuery({
+    queryKey: ["catalog-products", search.category, debounced, page],
+    queryFn: async () => {
+      const from = (page - 1) * PAGE_SIZE;
       const to = from + PAGE_SIZE - 1;
       let q = supabase
         .from("products")
@@ -94,32 +116,35 @@ function CatalogHome() {
       if (error) throw error;
       return data as ProductCardData[];
     },
-    getNextPageParam: (last, all) => (last.length < PAGE_SIZE ? undefined : all.length),
     enabled: !search.category || !!categories,
   });
 
-  const products = useMemo(
-    () => productsQuery.data?.pages.flat() ?? [],
-    [productsQuery.data],
-  );
-
-  // Infinite scroll sentinel
-  const sentinelRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const el = sentinelRef.current;
-    if (!el) return;
-    const obs = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting && productsQuery.hasNextPage && !productsQuery.isFetchingNextPage) {
-        productsQuery.fetchNextPage();
-      }
-    }, { rootMargin: "400px" });
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, [productsQuery]);
+  const products = productsQuery.data ?? [];
+  const totalPages = Math.max(1, Math.ceil((counts ?? 0) / PAGE_SIZE));
 
   const setCategory = (slug?: string) => {
-    navigate({ search: { ...search, category: slug } });
+    navigate({ search: { ...search, category: slug, page: undefined } });
   };
+
+  const goToPage = (p: number) => {
+    if (p < 1 || p > totalPages) return;
+    navigate({ search: { ...search, page: p === 1 ? undefined : p } });
+    if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  // Build page numbers with ellipsis
+  const pageNumbers: (number | "ellipsis")[] = [];
+  if (totalPages <= 7) {
+    for (let i = 1; i <= totalPages; i++) pageNumbers.push(i);
+  } else {
+    pageNumbers.push(1);
+    if (page > 3) pageNumbers.push("ellipsis");
+    const start = Math.max(2, page - 1);
+    const end = Math.min(totalPages - 1, page + 1);
+    for (let i = start; i <= end; i++) pageNumbers.push(i);
+    if (page < totalPages - 2) pageNumbers.push("ellipsis");
+    pageNumbers.push(totalPages);
+  }
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
@@ -251,16 +276,45 @@ function CatalogHome() {
               <Grid>
                 {products.map((p) => <ProductCard key={p.id} p={p} />)}
               </Grid>
-              <div ref={sentinelRef} className="h-12" />
-              {productsQuery.isFetchingNextPage && (
-                <div className="py-6 text-center text-xs text-muted-foreground">
-                  Carregando mais produtos...
-                </div>
-              )}
-              {!productsQuery.hasNextPage && products.length > PAGE_SIZE && (
-                <div className="py-8 text-center text-xs text-muted-foreground">
-                  Você chegou ao fim do catálogo.
-                </div>
+
+              {totalPages > 1 && (
+                <Pagination className="mt-10">
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious
+                        href="#"
+                        onClick={(e) => { e.preventDefault(); goToPage(page - 1); }}
+                        aria-disabled={page <= 1}
+                        className={page <= 1 ? "pointer-events-none opacity-50" : ""}
+                      />
+                    </PaginationItem>
+                    {pageNumbers.map((p, idx) =>
+                      p === "ellipsis" ? (
+                        <PaginationItem key={`e-${idx}`}>
+                          <PaginationEllipsis />
+                        </PaginationItem>
+                      ) : (
+                        <PaginationItem key={p}>
+                          <PaginationLink
+                            href="#"
+                            isActive={p === page}
+                            onClick={(e) => { e.preventDefault(); goToPage(p); }}
+                          >
+                            {p}
+                          </PaginationLink>
+                        </PaginationItem>
+                      )
+                    )}
+                    <PaginationItem>
+                      <PaginationNext
+                        href="#"
+                        onClick={(e) => { e.preventDefault(); goToPage(page + 1); }}
+                        aria-disabled={page >= totalPages}
+                        className={page >= totalPages ? "pointer-events-none opacity-50" : ""}
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
               )}
             </>
           )}
