@@ -8,9 +8,6 @@ import { WhatsAppFab } from "@/components/WhatsAppFab";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { buildWhatsAppLink, formatBRL } from "@/lib/format";
-import { WhatsAppFab } from "@/components/WhatsAppFab";
-import { Button } from "@/components/ui/button";
-import { buildWhatsAppLink, formatBRL } from "@/lib/format";
 
 export const Route = createFileRoute("/produto/$slug")({
   component: ProductPage,
