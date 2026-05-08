@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Pencil, Trash2, Plus, Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -173,11 +173,9 @@ function ProductDialog({
   const [form, setForm] = useState<Product>(editing ?? { name: "", is_active: true });
   const [saving, setSaving] = useState(false);
 
-  // sync when editing changes
-  useState(() => { setForm(editing ?? { name: "", is_active: true }); });
-
-  // re-sync via key on dialog open
-  if (editing && form !== editing && form.id !== editing.id) setForm(editing);
+  useEffect(() => {
+    if (open) setForm(editing ?? { name: "", is_active: true });
+  }, [open, editing]);
 
   const set = <K extends keyof Product>(k: K, v: Product[K]) => setForm({ ...form, [k]: v });
 
