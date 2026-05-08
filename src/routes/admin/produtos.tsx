@@ -42,6 +42,7 @@ type Product = {
   internal_code?: string | null;
   price?: number | null;
   image_url?: string | null;
+  gallery_images?: string[] | null;
   is_featured?: boolean;
   is_active?: boolean;
 };
@@ -203,6 +204,7 @@ function ProductDialog({
         internal_code: form.internal_code ?? null,
         price: form.price ? Number(form.price) : null,
         image_url: form.image_url ?? null,
+        gallery_images: form.gallery_images ?? [],
         is_active: !!form.is_active,
         is_featured: !!form.is_featured,
       };
@@ -283,6 +285,42 @@ function ProductDialog({
               {form.image_url && <img src={form.image_url} alt="" className="h-12 w-12 rounded-lg object-cover" />}
             </div>
             <Input className="mt-2" placeholder="Ou cole uma URL" value={form.image_url ?? ""} onChange={(e) => set("image_url", e.target.value)} />
+          </div>
+          <div>
+            <Label>Imagens extras (galeria)</Label>
+            <div className="flex items-center gap-3">
+              <Input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={async (e) => {
+                  const files = Array.from(e.target.files ?? []);
+                  if (files.length === 0) return;
+                  try {
+                    const urls = await Promise.all(files.map(uploadImage));
+                    set("gallery_images", [...(form.gallery_images ?? []), ...urls]);
+                    toast.success(`${urls.length} imagem(ns) adicionada(s)`);
+                  } catch (err) { toast.error((err as Error).message); }
+                  e.currentTarget.value = "";
+                }}
+              />
+            </div>
+            {(form.gallery_images?.length ?? 0) > 0 && (
+              <div className="mt-3 flex flex-wrap gap-2">
+                {form.gallery_images!.map((url, i) => (
+                  <div key={i} className="relative group">
+                    <img src={url} alt="" className="h-16 w-16 rounded-lg object-cover border border-border" />
+                    <button
+                      type="button"
+                      onClick={() => set("gallery_images", form.gallery_images!.filter((_, j) => j !== i))}
+                      className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-destructive text-destructive-foreground text-xs flex items-center justify-center shadow"
+                      aria-label="Remover"
+                    >×</button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <p className="mt-1 text-xs text-muted-foreground">A imagem principal continua sendo a capa. As extras aparecem no carrossel da página do produto.</p>
           </div>
           <div className="flex items-center gap-6">
             <label className="flex items-center gap-2 text-sm">
