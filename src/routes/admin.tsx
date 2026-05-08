@@ -83,7 +83,7 @@ function AdminLayout() {
         <header className="sticky top-0 z-30 border-b border-border bg-background/80 backdrop-blur-xl">
           <div className="flex h-16 items-center justify-between gap-4 px-6">
             <div className="md:hidden flex items-center gap-2">
-              <Fish className="h-5 w-5 text-primary" /> <span className="font-semibold">M2i Admin</span>
+              <img src={logoM2i} alt="M2i Comercial" className="h-7 w-auto" />
             </div>
             <div className="hidden md:block text-sm text-muted-foreground">
               Olá, <span className="text-foreground font-medium">{user?.email}</span>
