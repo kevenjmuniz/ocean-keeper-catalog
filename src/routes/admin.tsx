@@ -2,6 +2,7 @@ import { createFileRoute, Link, Outlet, useNavigate } from "@tanstack/react-rout
 import { useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Fish, LayoutDashboard, Package, Tags, Upload, LogOut } from "lucide-react";
+import logoM2i from "@/assets/logo-m2i.png";
 
 export const Route = createFileRoute("/admin")({
   component: AdminLayout,
