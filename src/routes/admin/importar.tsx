@@ -148,13 +148,13 @@ function ImportPage() {
 
       const found = codeMap.get(codigo);
       if (found) {
-        const updatePayload: Record<string, any> = {
+        const updatePayload = {
           name: descricao,
           unit: unidade,
           weight_kg: peso_cx,
           is_active: true,
+          ...(category_id ? { category_id } : {}),
         };
-        if (category_id) updatePayload.category_id = category_id;
         const { error } = await supabase
           .from("products")
           .update(updatePayload)
