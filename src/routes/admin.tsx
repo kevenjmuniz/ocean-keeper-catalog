@@ -2,6 +2,7 @@ import { createFileRoute, Link, Outlet, useNavigate } from "@tanstack/react-rout
 import { useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Fish, LayoutDashboard, Package, Tags, Upload, LogOut } from "lucide-react";
+import logoM2i from "@/assets/logo-m2i.png";
 
 export const Route = createFileRoute("/admin")({
   component: AdminLayout,
@@ -52,13 +53,8 @@ function AdminLayout() {
     <div className="min-h-screen bg-muted/30">
       <aside className="fixed inset-y-0 left-0 hidden w-64 border-r border-border bg-sidebar text-sidebar-foreground md:block">
         <div className="flex h-16 items-center gap-2 border-b border-sidebar-border px-6">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-ocean">
-            <Fish className="h-4 w-4 text-primary-foreground" />
-          </div>
-          <div>
-            <div className="text-sm font-semibold">M2i Admin</div>
-            <div className="text-[10px] uppercase tracking-wider text-sidebar-foreground/60">Painel</div>
-          </div>
+          <img src={logoM2i} alt="M2i Comercial" className="h-9 w-auto" />
+          <div className="ml-auto text-[10px] uppercase tracking-wider text-sidebar-foreground/60">Admin</div>
         </div>
         <nav className="mt-4 space-y-1 px-3">
           {links.map((l) => (
@@ -87,7 +83,7 @@ function AdminLayout() {
         <header className="sticky top-0 z-30 border-b border-border bg-background/80 backdrop-blur-xl">
           <div className="flex h-16 items-center justify-between gap-4 px-6">
             <div className="md:hidden flex items-center gap-2">
-              <Fish className="h-5 w-5 text-primary" /> <span className="font-semibold">M2i Admin</span>
+              <img src={logoM2i} alt="M2i Comercial" className="h-7 w-auto" />
             </div>
             <div className="hidden md:block text-sm text-muted-foreground">
               Olá, <span className="text-foreground font-medium">{user?.email}</span>

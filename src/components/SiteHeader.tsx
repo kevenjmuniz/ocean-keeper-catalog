@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
-import { Fish, Search, X } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import logoM2i from "@/assets/logo-m2i.png";
 
 type Props = {
   query?: string;
@@ -12,14 +13,12 @@ export function SiteHeader({ query, onQueryChange }: Props) {
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/85 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-[1400px] items-center gap-4 px-4 sm:px-6 lg:px-8">
-        <Link to="/" className="flex items-center gap-2 shrink-0 group">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-hero shadow-soft transition-smooth group-hover:shadow-glow">
-            <Fish className="h-5 w-5 text-primary-foreground" strokeWidth={2.2} />
-          </div>
-          <div className="leading-tight hidden sm:block">
-            <div className="text-base font-semibold tracking-tight text-foreground">M2i</div>
-            <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Comercial</div>
-          </div>
+        <Link to="/" className="flex items-center gap-2 shrink-0 group" aria-label="M2i Comercial">
+          <img
+            src={logoM2i}
+            alt="M2i Comercial"
+            className="h-10 w-auto transition-smooth group-hover:opacity-90"
+          />
         </Link>
 
         {showSearch && (
