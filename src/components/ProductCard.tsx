@@ -42,7 +42,7 @@ export function ProductCard({ p }: { p: ProductCardData }) {
         </div>
 
         <div className="p-5">
-          <h3 className="text-base font-semibold text-foreground line-clamp-1">{p.name}</h3>
+          <h3 className="text-base font-semibold text-foreground leading-snug break-words">{p.name}</h3>
           {p.description && (
             <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{p.description}</p>
           )}
