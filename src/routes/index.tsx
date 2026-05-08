@@ -124,20 +124,47 @@ function CatalogHome() {
     <div className="min-h-screen bg-background">
       <SiteHeader query={query} onQueryChange={setQuery} />
 
-      {/* Category strip */}
-      <div className="border-b border-border/60 bg-background/60">
-        <div className="mx-auto flex max-w-[1400px] gap-2 overflow-x-auto px-4 py-3 sm:px-6 lg:px-8 no-scrollbar">
-          <Chip label="Todas" active={!search.category} onClick={() => setCategory(undefined)} />
-          {categories?.map((c) => (
-            <Chip
-              key={c.id}
-              label={c.name}
-              active={search.category === c.slug}
-              onClick={() => setCategory(c.slug)}
-            />
-          ))}
+      {/* Mobile category filter trigger */}
+      <div className="border-b border-border/60 bg-background/60 lg:hidden">
+        <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-3 px-4 py-3 sm:px-6">
+          <div className="text-xs text-muted-foreground truncate">
+            {search.category
+              ? categories?.find((c) => c.slug === search.category)?.name ?? "Categoria"
+              : "Todas as categorias"}
+          </div>
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="outline" size="sm" className="rounded-full gap-2">
+                <Filter className="h-4 w-4" /> Filtrar categorias
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-[85vw] max-w-sm">
+              <SheetHeader>
+                <SheetTitle>Categorias</SheetTitle>
+              </SheetHeader>
+              <ul className="mt-4 space-y-1">
+                <li>
+                  <SidebarItem
+                    label="Todas as categorias"
+                    active={!search.category}
+                    onClick={() => setCategory(undefined)}
+                  />
+                </li>
+                {categories?.map((c) => (
+                  <li key={c.id}>
+                    <SidebarItem
+                      label={c.name}
+                      active={search.category === c.slug}
+                      onClick={() => setCategory(c.slug)}
+                    />
+                  </li>
+                ))}
+              </ul>
+            </SheetContent>
+          </Sheet>
         </div>
       </div>
+
 
       <div className="mx-auto max-w-[1400px] gap-8 px-4 py-8 sm:px-6 lg:flex lg:px-8">
         {/* Sidebar filters */}
