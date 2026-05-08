@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Search, X } from "lucide-react";
+import { Search, X, User } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import logoM2i from "@/assets/logo-m2i.png";
 
@@ -59,9 +59,10 @@ export function SiteHeader({ query, onQueryChange }: Props) {
         <div className="ml-auto flex items-center gap-2">
           <Link
             to="/admin"
-            className="hidden sm:inline-flex items-center rounded-full border border-white bg-white px-4 py-2 text-xs font-semibold uppercase tracking-wider text-[#001B44] transition-smooth hover:bg-white/90"
+            aria-label="Conta"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white transition-smooth hover:bg-white/20"
           >
-            Admin
+            <User className="h-5 w-5" />
           </Link>
         </div>
       </div>
