@@ -22,13 +22,13 @@ export function SiteHeader({ query, onQueryChange }: Props) {
         </Link>
 
         {showSearch && (
-          <div className="relative flex-1 max-w-2xl">
-            <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <div className="relative flex-1 max-w-2xl group">
+            <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ocean transition-smooth" />
             <Input
               value={query ?? ""}
               onChange={(e) => onQueryChange!(e.target.value)}
               placeholder="Buscar produtos, categorias, código..."
-              className="pl-10 pr-9 h-11 rounded-full bg-muted/40 border-transparent focus-visible:bg-background"
+              className="pl-10 pr-9 h-11 rounded-full bg-muted/40 border border-transparent caret-ocean focus-visible:bg-background focus-visible:border-ocean focus-visible:ring-2 focus-visible:ring-ocean/30 focus-visible:shadow-[0_0_0_4px_oklch(0.72_0.16_230_/_0.12)]"
             />
             {query && (
               <button
