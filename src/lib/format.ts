@@ -12,6 +12,6 @@ export const formatBRL = (n?: number | null) =>
     ? new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(n)
     : "—";
 
-export const WHATSAPP_NUMBER = "5511999999999"; // ajuste no admin futuramente
+export const WHATSAPP_NUMBER = "5511937392121"; // ajuste no admin futuramente
 export const buildWhatsAppLink = (msg: string) =>
   `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
