@@ -85,6 +85,40 @@ function ImportPage() {
       .not("internal_code", "is", null);
     const codeMap = new Map((existing ?? []).map((p) => [String(p.internal_code), p]));
 
+    // Preload existing categories
+    const { data: existingCats } = await supabase.from("categories").select("id, name, slug");
+    const catMap = new Map<string, string>(
+      (existingCats ?? []).map((c) => [normalizeCategoryName(c.name), c.id])
+    );
+
+    const ensureCategory = async (rawName: string): Promise<string | null> => {
+      const name = normalizeCategoryName(rawName);
+      if (!name) return null;
+      const cached = catMap.get(name);
+      if (cached) return cached;
+      const slug = slugify(name);
+      const { data, error } = await supabase
+        .from("categories")
+        .insert({ name, slug })
+        .select("id")
+        .single();
+      if (error || !data) {
+        // Possible race / unique slug collision — try fetching
+        const { data: again } = await supabase
+          .from("categories")
+          .select("id")
+          .ilike("name", name)
+          .maybeSingle();
+        if (again) {
+          catMap.set(name, again.id);
+          return again.id;
+        }
+        return null;
+      }
+      catMap.set(name, data.id);
+      return data.id;
+    };
+
     const errs: string[] = [];
     let created = 0;
     let updated = 0;
@@ -96,6 +130,7 @@ function ImportPage() {
       const unidade = String(r.unidade ?? "").trim() || null;
       const pesoRaw = String(r.peso_cx ?? "").trim().replace(",", ".");
       const peso_cx = pesoRaw ? Number(pesoRaw) : null;
+      const categoriaRaw = String(r.categoria ?? "").trim();
 
       if (!codigo) { errs.push(`Linha ${i + 2}: codigo vazio`); continue; }
       if (!descricao) { errs.push(`Linha ${i + 2}: descricao vazia`); continue; }
@@ -103,16 +138,26 @@ function ImportPage() {
         errs.push(`Linha ${i + 2}: peso_cx inválido`); continue;
       }
 
+      let category_id: string | null = null;
+      if (categoriaRaw) {
+        category_id = await ensureCategory(categoriaRaw);
+        if (!category_id) {
+          errs.push(`Linha ${i + 2}: falha ao criar/vincular categoria "${categoriaRaw}"`);
+        }
+      }
+
       const found = codeMap.get(codigo);
       if (found) {
+        const updatePayload: Record<string, any> = {
+          name: descricao,
+          unit: unidade,
+          weight_kg: peso_cx,
+          is_active: true,
+        };
+        if (category_id) updatePayload.category_id = category_id;
         const { error } = await supabase
           .from("products")
-          .update({
-            name: descricao,
-            unit: unidade,
-            weight_kg: peso_cx,
-            is_active: true,
-          })
+          .update(updatePayload)
           .eq("id", found.id);
         if (error) errs.push(`Linha ${i + 2} (${codigo}): ${error.message}`);
         else updated++;
@@ -125,6 +170,7 @@ function ImportPage() {
           unit: unidade,
           weight_kg: peso_cx,
           is_active: true,
+          category_id,
         });
         if (error) errs.push(`Linha ${i + 2} (${codigo}): ${error.message}`);
         else created++;
