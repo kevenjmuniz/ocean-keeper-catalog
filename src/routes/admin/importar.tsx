@@ -188,10 +188,10 @@ function ImportPage() {
 
   const downloadTemplate = () => {
     const csv =
-      "codigo,descricao,unidade,peso_cx\n" +
-      "001,CAMARÃO CINZA 80/100,KG,12\n" +
-      "002,FILÉ DE TILÁPIA IQF,KG,10\n" +
-      "003,ANEL DE LULA CONGELADO,PCT,6\n";
+      "codigo,descricao,unidade,peso_cx,categoria\n" +
+      "100088,PESCADA-MARIA-MOLE G,PCT 5 KG,15,FILÉS\n" +
+      "353550,CAM. SANTANA DESC. EVISC. 50/60,PCT 5 KG,15,CAMARÕES\n" +
+      "293000,LULA EM ANÉIS IQF,A GRANEL,10,MOLUSCOS\n";
     const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
