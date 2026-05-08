@@ -204,6 +204,7 @@ function ProductDialog({
         internal_code: form.internal_code ?? null,
         price: form.price ? Number(form.price) : null,
         image_url: form.image_url ?? null,
+        gallery_images: form.gallery_images ?? [],
         is_active: !!form.is_active,
         is_featured: !!form.is_featured,
       };
