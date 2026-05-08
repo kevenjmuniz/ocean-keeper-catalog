@@ -273,8 +273,8 @@ function CatalogHome() {
             </div>
           ) : (
             <>
-              <Grid>
-                {products.map((p) => <ProductCard key={p.id} p={p} />)}
+              <Grid key={page}>
+                {products.map((p, i) => <ProductCard key={p.id} p={p} index={i} />)}
               </Grid>
 
               {totalPages > 1 && (

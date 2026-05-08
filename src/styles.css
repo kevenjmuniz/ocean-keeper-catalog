@@ -170,3 +170,39 @@
   50% { transform: translateY(-6px); }
 }
 .animate-float { animation: float 3s ease-in-out infinite; }
+
+/* Subtle entrance for cards / grids */
+@keyframes card-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-card-in { animation: card-in 280ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+@keyframes soft-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.animate-soft-fade { animation: soft-fade 220ms ease-out both; }
+
+/* Micro-press on interactive elements */
+@layer utilities {
+  button, a[role="button"] {
+    transition: transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
+                box-shadow 200ms cubic-bezier(0.22, 1, 0.36, 1),
+                background-color 200ms ease,
+                color 200ms ease,
+                opacity 200ms ease;
+  }
+  button:active, a[role="button"]:active { transform: scale(0.97); }
+
+  /* Smooth focus ring transitions for inputs */
+  input, textarea, select {
+    transition: box-shadow 200ms ease, border-color 200ms ease, background-color 200ms ease;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-card-in, .animate-soft-fade, .animate-fade-up, .animate-float {
+    animation: none !important;
+  }
+}
