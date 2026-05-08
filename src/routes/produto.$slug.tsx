@@ -3,7 +3,6 @@ import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Snowflake } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { SiteHeader } from "@/components/SiteHeader";
-import { SiteFooter } from "@/components/SiteFooter";
 import { WhatsAppFab } from "@/components/WhatsAppFab";
 import { Button } from "@/components/ui/button";
 import { buildWhatsAppLink, formatBRL } from "@/lib/format";
@@ -34,7 +33,7 @@ function ProductPage() {
     <div className="min-h-screen bg-background">
       <SiteHeader />
       <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
-        <Link to="/catalogo" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground">
+        <Link to="/" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground">
           <ArrowLeft className="mr-1 h-4 w-4" /> Voltar ao catálogo
         </Link>
 
@@ -86,14 +85,13 @@ function ProductPage() {
                   </a>
                 </Button>
                 <Button asChild variant="outline" size="lg" className="rounded-full">
-                  <Link to="/catalogo">Ver mais produtos</Link>
+                  <Link to="/">Ver mais produtos</Link>
                 </Button>
               </div>
             </div>
           </div>
         )}
       </div>
-      <SiteFooter />
       <WhatsAppFab message={product ? `Orçamento para ${product.name}` : undefined} />
     </div>
   );

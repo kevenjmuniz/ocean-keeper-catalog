@@ -155,6 +155,8 @@
   .shadow-glow { box-shadow: var(--shadow-glow); }
   .transition-smooth { transition: all var(--transition-smooth); }
   .text-balance { text-wrap: balance; }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 }
 
 @keyframes fade-up {
