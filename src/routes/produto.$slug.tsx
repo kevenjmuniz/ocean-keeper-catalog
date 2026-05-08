@@ -1,8 +1,13 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Snowflake } from "lucide-react";
+import { useState } from "react";
+import { ArrowLeft, ChevronLeft, ChevronRight, Snowflake } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { SiteHeader } from "@/components/SiteHeader";
+import { WhatsAppFab } from "@/components/WhatsAppFab";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { buildWhatsAppLink, formatBRL } from "@/lib/format";
 import { WhatsAppFab } from "@/components/WhatsAppFab";
 import { Button } from "@/components/ui/button";
 import { buildWhatsAppLink, formatBRL } from "@/lib/format";
