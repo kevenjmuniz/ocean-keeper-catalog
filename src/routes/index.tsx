@@ -286,10 +286,10 @@ function SidebarItem({ label, active, onClick }: { label: string; active: boolea
     <button
       onClick={onClick}
       className={
-        "w-full text-left rounded-lg px-3 py-2 text-sm transition-smooth " +
+        "w-full text-left rounded-lg px-3 py-2 text-sm transition-smooth border-l-2 " +
         (active
-          ? "bg-primary/10 text-primary font-semibold"
-          : "text-muted-foreground hover:bg-muted hover:text-foreground")
+          ? "bg-gold/10 text-gold font-semibold border-gold"
+          : "border-transparent text-muted-foreground hover:bg-gold/5 hover:text-gold hover:border-gold/40")
       }
     >
       {label}
