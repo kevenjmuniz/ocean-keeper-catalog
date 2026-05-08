@@ -14,6 +14,10 @@ export const Route = createFileRoute("/admin/importar")({
 });
 
 const REQUIRED_COLUMNS = ["codigo", "descricao", "unidade", "peso_cx"] as const;
+const OPTIONAL_COLUMNS = ["categoria"] as const;
+
+const normalizeCategoryName = (s: string) =>
+  s.normalize("NFD").replace(/[\u0300-\u036f]/g, (m) => m).trim().replace(/\s+/g, " ").toUpperCase();
 
 type Row = Record<string, any>;
 
