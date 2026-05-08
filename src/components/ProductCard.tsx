@@ -14,9 +14,12 @@ export type ProductCardData = {
   category?: { name: string } | null;
 };
 
-export function ProductCard({ p }: { p: ProductCardData }) {
+export function ProductCard({ p, index = 0 }: { p: ProductCardData; index?: number }) {
   return (
-    <article className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-soft transition-smooth hover:-translate-y-1 hover:shadow-elegant">
+    <article
+      className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-soft transition-smooth hover:-translate-y-1 hover:shadow-elegant animate-card-in"
+      style={{ animationDelay: `${Math.min(index, 15) * 30}ms` }}
+    >
       <Link to="/produto/$slug" params={{ slug: p.slug }} className="flex flex-1 flex-col">
         <div className="relative aspect-[4/3] overflow-hidden bg-muted">
           {p.image_url ? (
