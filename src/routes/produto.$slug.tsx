@@ -102,3 +102,65 @@ function Info({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
+
+function ProductGallery({ mainImage, gallery, name }: { mainImage: string | null; gallery: string[]; name: string }) {
+  const images = [mainImage, ...gallery].filter((u): u is string => !!u);
+  const [index, setIndex] = useState(0);
+  const current = images[index];
+  const go = (d: number) => setIndex((i) => (i + d + images.length) % images.length);
+
+  return (
+    <div className="space-y-3">
+      <div className="relative overflow-hidden rounded-3xl bg-muted shadow-elegant">
+        {current ? (
+          <img src={current} alt={name} className="aspect-square w-full object-cover" />
+        ) : (
+          <div className="flex aspect-square items-center justify-center text-muted-foreground">Sem imagem</div>
+        )}
+        <div className="absolute top-4 left-4 inline-flex items-center gap-1 rounded-full bg-background/90 px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-primary backdrop-blur">
+          <Snowflake className="h-3 w-3 text-ocean" /> Congelado
+        </div>
+        {images.length > 1 && (
+          <>
+            <button
+              type="button"
+              onClick={() => go(-1)}
+              aria-label="Imagem anterior"
+              className="absolute left-3 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-background/90 hover:bg-background flex items-center justify-center shadow backdrop-blur"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </button>
+            <button
+              type="button"
+              onClick={() => go(1)}
+              aria-label="Próxima imagem"
+              className="absolute right-3 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-background/90 hover:bg-background flex items-center justify-center shadow backdrop-blur"
+            >
+              <ChevronRight className="h-5 w-5" />
+            </button>
+            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-background/90 px-2.5 py-1 text-xs font-medium backdrop-blur">
+              {index + 1} / {images.length}
+            </div>
+          </>
+        )}
+      </div>
+      {images.length > 1 && (
+        <div className="flex gap-2 overflow-x-auto pb-1">
+          {images.map((url, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => setIndex(i)}
+              className={cn(
+                "h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg border-2 transition",
+                i === index ? "border-primary" : "border-border opacity-70 hover:opacity-100",
+              )}
+            >
+              <img src={url} alt="" className="h-full w-full object-cover" />
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
