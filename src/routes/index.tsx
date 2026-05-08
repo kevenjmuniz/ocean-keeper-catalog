@@ -9,6 +9,7 @@ import { WhatsAppFab } from "@/components/WhatsAppFab";
 import { ProductCard, type ProductCardData } from "@/components/ProductCard";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import lemeImg from "@/assets/leme.png";
 
 const PAGE_SIZE = 12;
 
@@ -121,7 +122,14 @@ function CatalogHome() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* Decorative ship wheel watermark */}
+      <img
+        src={lemeImg}
+        alt=""
+        aria-hidden="true"
+        className="pointer-events-none select-none fixed -top-24 -right-32 w-[420px] sm:w-[560px] lg:w-[780px] opacity-[0.05] sm:opacity-[0.07] lg:opacity-[0.09] z-0 [filter:grayscale(0.8)_blur(1px)]"
+      />
       <SiteHeader query={query} onQueryChange={setQuery} />
 
       {/* Mobile category filter trigger */}
