@@ -179,8 +179,8 @@ function CatalogHome() {
         <aside className="hidden lg:block w-60 shrink-0">
           <div className="sticky top-[140px] space-y-6">
             <div>
-              <div className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                <Layers className="h-3.5 w-3.5" /> Categorias
+              <div className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-gold">
+                <Layers className="h-3.5 w-3.5 text-gold" /> Categorias
               </div>
               <ul className="space-y-1">
                 <li>
