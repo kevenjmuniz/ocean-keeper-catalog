@@ -42,6 +42,7 @@ type Product = {
   internal_code?: string | null;
   price?: number | null;
   image_url?: string | null;
+  gallery_images?: string[] | null;
   is_featured?: boolean;
   is_active?: boolean;
 };
