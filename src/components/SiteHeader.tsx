@@ -11,7 +11,7 @@ type Props = {
 export function SiteHeader({ query, onQueryChange }: Props) {
   const showSearch = typeof onQueryChange === "function";
   return (
-    <header className="sticky top-0 z-40 border-b border-border/60 bg-background/85 backdrop-blur-xl">
+    <header className="sticky top-0 z-40 border-b border-[#001B44] bg-[#001B44] text-white">
       <div className="mx-auto flex h-16 max-w-[1400px] items-center gap-4 px-4 sm:px-6 lg:px-8">
         <Link to="/" className="flex items-center gap-2 shrink-0 group" aria-label="M2i Comercial">
           <img
@@ -28,7 +28,7 @@ export function SiteHeader({ query, onQueryChange }: Props) {
               value={query ?? ""}
               onChange={(e) => onQueryChange!(e.target.value)}
               placeholder="Buscar produtos, categorias, código..."
-              className="pl-10 pr-9 h-11 rounded-full bg-white border border-[#00AEEF] text-[#001B44] placeholder:text-[#A6A6A6] caret-[#00AEEF] focus-visible:bg-white focus-visible:border-[#00AEEF] focus-visible:ring-2 focus-visible:ring-[#00AEEF]/30 focus-visible:shadow-[0_4px_14px_-2px_rgba(0,174,239,0.35)]"
+              className="pl-10 pr-9 h-11 rounded-full bg-white border border-white text-[#001B44] placeholder:text-[#A6A6A6] caret-[#001B44] focus-visible:bg-white focus-visible:border-white focus-visible:ring-2 focus-visible:ring-white/40"
             />
             {query && (
               <button
@@ -45,7 +45,7 @@ export function SiteHeader({ query, onQueryChange }: Props) {
         <div className="ml-auto flex items-center gap-2">
           <Link
             to="/admin"
-            className="hidden sm:inline-flex items-center rounded-full border border-border bg-background px-4 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground transition-smooth hover:border-foreground hover:text-foreground"
+            className="hidden sm:inline-flex items-center rounded-full border border-white bg-white px-4 py-2 text-xs font-semibold uppercase tracking-wider text-[#001B44] transition-smooth hover:bg-white/90"
           >
             Admin
           </Link>
