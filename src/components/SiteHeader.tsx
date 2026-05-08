@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
-import { Fish, Search, X } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import logoM2i from "@/assets/logo-m2i.png";
 
 type Props = {
   query?: string;
