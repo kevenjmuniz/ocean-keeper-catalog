@@ -14,6 +14,10 @@ export const Route = createFileRoute("/admin/importar")({
 });
 
 const REQUIRED_COLUMNS = ["codigo", "descricao", "unidade", "peso_cx"] as const;
+const OPTIONAL_COLUMNS = ["categoria"] as const;
+
+const normalizeCategoryName = (s: string) =>
+  s.trim().replace(/\s+/g, " ").toLocaleUpperCase("pt-BR");
 
 type Row = Record<string, any>;
 
@@ -81,6 +85,40 @@ function ImportPage() {
       .not("internal_code", "is", null);
     const codeMap = new Map((existing ?? []).map((p) => [String(p.internal_code), p]));
 
+    // Preload existing categories
+    const { data: existingCats } = await supabase.from("categories").select("id, name, slug");
+    const catMap = new Map<string, string>(
+      (existingCats ?? []).map((c) => [normalizeCategoryName(c.name), c.id])
+    );
+
+    const ensureCategory = async (rawName: string): Promise<string | null> => {
+      const name = normalizeCategoryName(rawName);
+      if (!name) return null;
+      const cached = catMap.get(name);
+      if (cached) return cached;
+      const slug = slugify(name);
+      const { data, error } = await supabase
+        .from("categories")
+        .insert({ name, slug })
+        .select("id")
+        .single();
+      if (error || !data) {
+        // Possible race / unique slug collision — try fetching
+        const { data: again } = await supabase
+          .from("categories")
+          .select("id")
+          .ilike("name", name)
+          .maybeSingle();
+        if (again) {
+          catMap.set(name, again.id);
+          return again.id;
+        }
+        return null;
+      }
+      catMap.set(name, data.id);
+      return data.id;
+    };
+
     const errs: string[] = [];
     let created = 0;
     let updated = 0;
@@ -92,6 +130,7 @@ function ImportPage() {
       const unidade = String(r.unidade ?? "").trim() || null;
       const pesoRaw = String(r.peso_cx ?? "").trim().replace(",", ".");
       const peso_cx = pesoRaw ? Number(pesoRaw) : null;
+      const categoriaRaw = String(r.categoria ?? "").trim();
 
       if (!codigo) { errs.push(`Linha ${i + 2}: codigo vazio`); continue; }
       if (!descricao) { errs.push(`Linha ${i + 2}: descricao vazia`); continue; }
@@ -99,16 +138,26 @@ function ImportPage() {
         errs.push(`Linha ${i + 2}: peso_cx inválido`); continue;
       }
 
+      let category_id: string | null = null;
+      if (categoriaRaw) {
+        category_id = await ensureCategory(categoriaRaw);
+        if (!category_id) {
+          errs.push(`Linha ${i + 2}: falha ao criar/vincular categoria "${categoriaRaw}"`);
+        }
+      }
+
       const found = codeMap.get(codigo);
       if (found) {
+        const updatePayload = {
+          name: descricao,
+          unit: unidade,
+          weight_kg: peso_cx,
+          is_active: true,
+          ...(category_id ? { category_id } : {}),
+        };
         const { error } = await supabase
           .from("products")
-          .update({
-            name: descricao,
-            unit: unidade,
-            weight_kg: peso_cx,
-            is_active: true,
-          })
+          .update(updatePayload)
           .eq("id", found.id);
         if (error) errs.push(`Linha ${i + 2} (${codigo}): ${error.message}`);
         else updated++;
@@ -121,6 +170,7 @@ function ImportPage() {
           unit: unidade,
           weight_kg: peso_cx,
           is_active: true,
+          category_id,
         });
         if (error) errs.push(`Linha ${i + 2} (${codigo}): ${error.message}`);
         else created++;
@@ -138,10 +188,10 @@ function ImportPage() {
 
   const downloadTemplate = () => {
     const csv =
-      "codigo,descricao,unidade,peso_cx\n" +
-      "001,CAMARÃO CINZA 80/100,KG,12\n" +
-      "002,FILÉ DE TILÁPIA IQF,KG,10\n" +
-      "003,ANEL DE LULA CONGELADO,PCT,6\n";
+      "codigo,descricao,unidade,peso_cx,categoria\n" +
+      "100088,PESCADA-MARIA-MOLE G,PCT 5 KG,15,FILÉS\n" +
+      "353550,CAM. SANTANA DESC. EVISC. 50/60,PCT 5 KG,15,CAMARÕES\n" +
+      "293000,LULA EM ANÉIS IQF,A GRANEL,10,MOLUSCOS\n";
     const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -155,7 +205,8 @@ function ImportPage() {
         <h1 className="text-2xl font-semibold">Importar produtos</h1>
         <p className="text-sm text-muted-foreground">
           Envie um arquivo CSV ou Excel (.xlsx) com as colunas:{" "}
-          <code className="rounded bg-muted px-1.5 py-0.5 text-xs">codigo, descricao, unidade, peso_cx</code>.
+          <code className="rounded bg-muted px-1.5 py-0.5 text-xs">codigo, descricao, unidade, peso_cx, categoria</code>.
+          Categorias inexistentes serão criadas automaticamente.
           Produtos com código já existente serão atualizados automaticamente.
         </p>
       </div>
