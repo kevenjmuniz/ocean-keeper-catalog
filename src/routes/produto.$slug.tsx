@@ -1,7 +1,7 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
-import { ArrowLeft, ChevronLeft, ChevronRight, Snowflake } from "lucide-react";
+import { useState, useEffect } from "react";
+import { ArrowLeft, ChevronLeft, ChevronRight, Snowflake, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { SiteHeader } from "@/components/SiteHeader";
 import { WhatsAppFab } from "@/components/WhatsAppFab";
@@ -106,14 +106,38 @@ function Info({ label, value }: { label: string; value: string }) {
 function ProductGallery({ mainImage, gallery, name }: { mainImage: string | null; gallery: string[]; name: string }) {
   const images = [mainImage, ...gallery].filter((u): u is string => !!u);
   const [index, setIndex] = useState(0);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
   const current = images[index];
   const go = (d: number) => setIndex((i) => (i + d + images.length) % images.length);
+
+  useEffect(() => {
+    if (!lightboxOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setLightboxOpen(false);
+      else if (e.key === "ArrowRight" && images.length > 1) go(1);
+      else if (e.key === "ArrowLeft" && images.length > 1) go(-1);
+    };
+    window.addEventListener("keydown", onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [lightboxOpen, images.length]);
 
   return (
     <div className="space-y-3">
       <div className="relative overflow-hidden rounded-3xl bg-muted shadow-elegant">
         {current ? (
-          <img src={current} alt={name} className="aspect-square w-full object-cover" />
+          <button
+            type="button"
+            onClick={() => setLightboxOpen(true)}
+            className="block w-full cursor-zoom-in"
+            aria-label="Ampliar imagem"
+          >
+            <img src={current} alt={name} className="aspect-square w-full object-cover" />
+          </button>
         ) : (
           <div className="flex aspect-square items-center justify-center text-muted-foreground">Sem imagem</div>
         )}
@@ -159,6 +183,55 @@ function ProductGallery({ mainImage, gallery, name }: { mainImage: string | null
               <img src={url} alt="" className="h-full w-full object-cover" />
             </button>
           ))}
+        </div>
+      )}
+
+      {lightboxOpen && current && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setLightboxOpen(false)}
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in-0 duration-200"
+        >
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); setLightboxOpen(false); }}
+            aria-label="Fechar"
+            className="absolute top-4 right-4 h-10 w-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center backdrop-blur transition"
+          >
+            <X className="h-5 w-5" />
+          </button>
+          {images.length > 1 && (
+            <>
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); go(-1); }}
+                aria-label="Imagem anterior"
+                className="absolute left-4 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center backdrop-blur transition"
+              >
+                <ChevronLeft className="h-6 w-6" />
+              </button>
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); go(1); }}
+                aria-label="Próxima imagem"
+                className="absolute right-4 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center backdrop-blur transition"
+              >
+                <ChevronRight className="h-6 w-6" />
+              </button>
+            </>
+          )}
+          <img
+            src={current}
+            alt={name}
+            onClick={(e) => e.stopPropagation()}
+            className="max-h-[90vh] max-w-[90vw] object-contain rounded-lg shadow-2xl animate-in zoom-in-95 duration-200"
+          />
+          {images.length > 1 && (
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-white/10 text-white px-3 py-1 text-sm backdrop-blur">
+              {index + 1} / {images.length}
+            </div>
+          )}
         </div>
       )}
     </div>
