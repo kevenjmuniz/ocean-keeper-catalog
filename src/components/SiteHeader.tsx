@@ -11,8 +11,22 @@ type Props = {
 export function SiteHeader({ query, onQueryChange }: Props) {
   const showSearch = typeof onQueryChange === "function";
   return (
-    <header className="sticky top-0 z-40 border-b border-[#001B44] bg-[#001B44] text-white">
-      <div className="mx-auto flex h-20 max-w-[1400px] items-center gap-4 px-4 sm:px-6 lg:px-8">
+    <header
+      className="sticky top-0 z-40 border-b border-[#001B44] text-white relative isolate"
+      style={{
+        backgroundColor: "#001B44",
+        backgroundImage: [
+          "radial-gradient(ellipse 80% 60% at 20% 0%, rgba(0,43,107,0.55), transparent 60%)",
+          "radial-gradient(ellipse 70% 60% at 100% 100%, rgba(0,31,82,0.65), transparent 65%)",
+          "linear-gradient(135deg, #001B44 0%, #002B6B 50%, #001F52 100%)",
+          // very subtle SVG noise/grain
+          "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.06 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>\")",
+        ].join(", "),
+        backgroundBlendMode: "overlay, overlay, normal, overlay",
+        boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06), inset 0 -1px 0 rgba(0,0,0,0.35), 0 1px 0 rgba(0,0,0,0.2)",
+      }}
+    >
+      <div className="mx-auto flex h-20 max-w-[1400px] items-center gap-4 px-4 sm:px-6 lg:px-8 relative">
         <Link to="/" className="flex items-center gap-2 shrink-0 group" aria-label="M2i Comercial">
           <img
             src={logoM2i}
