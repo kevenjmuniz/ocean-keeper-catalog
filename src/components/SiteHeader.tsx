@@ -12,12 +12,12 @@ export function SiteHeader({ query, onQueryChange }: Props) {
   const showSearch = typeof onQueryChange === "function";
   return (
     <header className="sticky top-0 z-40 border-b border-[#001B44] bg-[#001B44] text-white">
-      <div className="mx-auto flex h-16 max-w-[1400px] items-center gap-4 px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto flex h-20 max-w-[1400px] items-center gap-4 px-4 sm:px-6 lg:px-8">
         <Link to="/" className="flex items-center gap-2 shrink-0 group" aria-label="M2i Comercial">
           <img
             src={logoM2i}
             alt="M2i Comercial"
-            className="h-10 w-auto transition-smooth group-hover:opacity-90"
+            className="h-14 sm:h-16 w-auto transition-smooth group-hover:opacity-90"
           />
         </Link>
 
