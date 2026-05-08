@@ -205,7 +205,8 @@ function ImportPage() {
         <h1 className="text-2xl font-semibold">Importar produtos</h1>
         <p className="text-sm text-muted-foreground">
           Envie um arquivo CSV ou Excel (.xlsx) com as colunas:{" "}
-          <code className="rounded bg-muted px-1.5 py-0.5 text-xs">codigo, descricao, unidade, peso_cx</code>.
+          <code className="rounded bg-muted px-1.5 py-0.5 text-xs">codigo, descricao, unidade, peso_cx, categoria</code>.
+          Categorias inexistentes serão criadas automaticamente.
           Produtos com código já existente serão atualizados automaticamente.
         </p>
       </div>
