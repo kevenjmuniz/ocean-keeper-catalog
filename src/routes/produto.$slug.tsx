@@ -47,16 +47,11 @@ function ProductPage() {
           </div>
         ) : (
           <div className="mt-8 grid gap-12 lg:grid-cols-2">
-            <div className="relative overflow-hidden rounded-3xl bg-muted shadow-elegant">
-              {product.image_url ? (
-                <img src={product.image_url} alt={product.name} className="aspect-square w-full object-cover" />
-              ) : (
-                <div className="flex aspect-square items-center justify-center text-muted-foreground">Sem imagem</div>
-              )}
-              <div className="absolute top-4 left-4 inline-flex items-center gap-1 rounded-full bg-background/90 px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-primary backdrop-blur">
-                <Snowflake className="h-3 w-3 text-ocean" /> Congelado
-              </div>
-            </div>
+            <ProductGallery
+              mainImage={product.image_url}
+              gallery={(product as any).gallery_images ?? []}
+              name={product.name}
+            />
             <div>
               {product.category?.name && (
                 <div className="text-xs font-semibold uppercase tracking-[0.18em] text-ocean">{product.category.name}</div>
