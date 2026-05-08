@@ -8,69 +8,63 @@ import { supabase } from "@/integrations/supabase/client";
 import { slugify } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from "@/components/ui/select";
 
 export const Route = createFileRoute("/admin/importar")({
   component: ImportPage,
 });
 
-const FIELDS = [
-  { key: "name", label: "Nome *", required: true },
-  { key: "description", label: "Descrição" },
-  { key: "category", label: "Categoria (nome)" },
-  { key: "subcategory", label: "Subcategoria" },
-  { key: "weight_kg", label: "Peso da caixa (kg)" },
-  { key: "unit", label: "Unidade" },
-  { key: "internal_code", label: "Código interno" },
-  { key: "price", label: "Preço" },
-  { key: "image_url", label: "URL da imagem" },
-  { key: "is_active", label: "Status (ativo)" },
-] as const;
+const REQUIRED_COLUMNS = ["codigo", "descricao", "unidade", "peso_cx"] as const;
 
 type Row = Record<string, any>;
+
+const normalize = (s: string) =>
+  s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase().replace(/\s+/g, "_");
 
 function ImportPage() {
   const [rows, setRows] = useState<Row[]>([]);
   const [headers, setHeaders] = useState<string[]>([]);
-  const [mapping, setMapping] = useState<Record<string, string>>({});
   const [progress, setProgress] = useState(0);
   const [importing, setImporting] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
   const [done, setDone] = useState(0);
+  const [result, setResult] = useState<{ created: number; updated: number } | null>(null);
 
   const onFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setErrors([]); setDone(0); setProgress(0);
+    setErrors([]); setDone(0); setProgress(0); setResult(null); setRows([]); setHeaders([]);
 
     try {
       let parsed: Row[] = [];
-      if (file.name.endsWith(".csv")) {
+      if (file.name.toLowerCase().endsWith(".csv")) {
         const text = await file.text();
-        const r = Papa.parse<Row>(text, { header: true, skipEmptyLines: true });
+        const r = Papa.parse<Row>(text, {
+          header: true,
+          skipEmptyLines: true,
+          transformHeader: (h) => normalize(h),
+        });
         parsed = r.data;
       } else {
         const buf = await file.arrayBuffer();
         const wb = XLSX.read(buf, { type: "array" });
-        parsed = XLSX.utils.sheet_to_json<Row>(wb.Sheets[wb.SheetNames[0]]);
+        const raw = XLSX.utils.sheet_to_json<Row>(wb.Sheets[wb.SheetNames[0]], { defval: "" });
+        parsed = raw.map((row) => {
+          const out: Row = {};
+          for (const k of Object.keys(row)) out[normalize(k)] = row[k];
+          return out;
+        });
       }
       if (parsed.length === 0) return toast.error("Arquivo vazio.");
+
       const hdrs = Object.keys(parsed[0]);
+      const missing = REQUIRED_COLUMNS.filter((c) => !hdrs.includes(c));
+      if (missing.length > 0) {
+        toast.error(`Colunas obrigatórias ausentes: ${missing.join(", ")}`);
+        return;
+      }
+
       setHeaders(hdrs);
       setRows(parsed);
-
-      // Auto-map by name similarity
-      const m: Record<string, string> = {};
-      for (const f of FIELDS) {
-        const found = hdrs.find((h) =>
-          slugify(h).replace(/-/g, "") === slugify(f.key).replace(/-/g, "") ||
-          slugify(h).replace(/-/g, "") === slugify(f.label).replace(/-/g, ""),
-        );
-        if (found) m[f.key] = found;
-      }
-      setMapping(m);
       toast.success(`${parsed.length} linhas detectadas.`);
     } catch (err) {
       toast.error("Erro ao ler arquivo: " + (err as Error).message);
@@ -78,77 +72,80 @@ function ImportPage() {
   };
 
   const runImport = async () => {
-    if (!mapping.name) return toast.error("Mapeie pelo menos a coluna Nome.");
-    setImporting(true); setErrors([]); setDone(0);
+    setImporting(true); setErrors([]); setDone(0); setResult(null);
 
-    // Preload categories
-    const { data: cats } = await supabase.from("categories").select("id, name, slug");
-    const catMap = new Map((cats ?? []).map((c) => [c.name.toLowerCase(), c.id]));
+    // Preload existing products by internal_code
+    const { data: existing } = await supabase
+      .from("products")
+      .select("id, internal_code, slug")
+      .not("internal_code", "is", null);
+    const codeMap = new Map((existing ?? []).map((p) => [String(p.internal_code), p]));
 
     const errs: string[] = [];
-    let ok = 0;
+    let created = 0;
+    let updated = 0;
+
     for (let i = 0; i < rows.length; i++) {
       const r = rows[i];
-      const get = (k: string) => {
-        const col = mapping[k];
-        return col ? r[col] : undefined;
-      };
-      const name = String(get("name") ?? "").trim();
-      if (!name) { errs.push(`Linha ${i + 2}: nome vazio`); continue; }
+      const codigo = String(r.codigo ?? "").trim();
+      const descricao = String(r.descricao ?? "").trim();
+      const unidade = String(r.unidade ?? "").trim() || null;
+      const pesoRaw = String(r.peso_cx ?? "").trim().replace(",", ".");
+      const peso_cx = pesoRaw ? Number(pesoRaw) : null;
 
-      let category_id: string | null = null;
-      const catName = get("category");
-      if (catName) {
-        const key = String(catName).trim().toLowerCase();
-        if (catMap.has(key)) category_id = catMap.get(key)!;
-        else {
-          const { data: nc } = await supabase
-            .from("categories")
-            .insert({ name: String(catName).trim(), slug: slugify(String(catName)) })
-            .select("id")
-            .single();
-          if (nc) { category_id = nc.id; catMap.set(key, nc.id); }
-        }
+      if (!codigo) { errs.push(`Linha ${i + 2}: codigo vazio`); continue; }
+      if (!descricao) { errs.push(`Linha ${i + 2}: descricao vazia`); continue; }
+      if (peso_cx !== null && Number.isNaN(peso_cx)) {
+        errs.push(`Linha ${i + 2}: peso_cx inválido`); continue;
       }
 
-      const payload = {
-        name,
-        slug: slugify(name) + "-" + (get("internal_code") || Math.random().toString(36).slice(2, 6)),
-        description: get("description") || null,
-        category_id,
-        subcategory: get("subcategory") || null,
-        weight_kg: get("weight_kg") ? Number(String(get("weight_kg")).replace(",", ".")) : null,
-        unit: get("unit") || null,
-        internal_code: get("internal_code") ? String(get("internal_code")) : null,
-        price: get("price") ? Number(String(get("price")).replace(",", ".")) : null,
-        image_url: get("image_url") || null,
-        is_active: get("is_active") === undefined ? true : !["false", "0", "não", "nao", "inativo"].includes(String(get("is_active")).toLowerCase()),
-      };
-
-      // Upsert by internal_code if present
-      let res;
-      if (payload.internal_code) {
-        res = await supabase.from("products").upsert(payload, { onConflict: "internal_code" });
+      const found = codeMap.get(codigo);
+      if (found) {
+        const { error } = await supabase
+          .from("products")
+          .update({
+            name: descricao,
+            unit: unidade,
+            weight_kg: peso_cx,
+            is_active: true,
+          })
+          .eq("id", found.id);
+        if (error) errs.push(`Linha ${i + 2} (${codigo}): ${error.message}`);
+        else updated++;
       } else {
-        res = await supabase.from("products").insert(payload);
+        const slug = slugify(descricao) + "-" + slugify(codigo);
+        const { error } = await supabase.from("products").insert({
+          name: descricao,
+          slug,
+          internal_code: codigo,
+          unit: unidade,
+          weight_kg: peso_cx,
+          is_active: true,
+        });
+        if (error) errs.push(`Linha ${i + 2} (${codigo}): ${error.message}`);
+        else created++;
       }
-      if (res.error) errs.push(`Linha ${i + 2} (${name}): ${res.error.message}`);
-      else ok++;
 
       setDone(i + 1);
       setProgress(Math.round(((i + 1) / rows.length) * 100));
     }
 
     setErrors(errs);
+    setResult({ created, updated });
     setImporting(false);
-    toast.success(`Importação concluída: ${ok} ok, ${errs.length} erro(s).`);
+    toast.success(`Importação concluída: ${created} novos, ${updated} atualizados, ${errs.length} erro(s).`);
   };
 
   const downloadTemplate = () => {
-    const csv = "name,description,category,subcategory,weight_kg,unit,internal_code,price,image_url,is_active\nSalmão Filé,Filé de salmão congelado premium,Peixes Nobres,Salmão,10,caixa,SAL-001,289.90,https://exemplo.com/salmao.jpg,true\n";
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const csv =
+      "codigo,descricao,unidade,peso_cx\n" +
+      "001,CAMARÃO CINZA 80/100,KG,12\n" +
+      "002,FILÉ DE TILÁPIA IQF,KG,10\n" +
+      "003,ANEL DE LULA CONGELADO,PCT,6\n";
+    const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a"); a.href = url; a.download = "modelo-m2i.csv"; a.click();
+    const a = document.createElement("a");
+    a.href = url; a.download = "modelo-m2i.csv"; a.click();
     URL.revokeObjectURL(url);
   };
 
@@ -156,7 +153,11 @@ function ImportPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold">Importar produtos</h1>
-        <p className="text-sm text-muted-foreground">Suba um arquivo CSV ou Excel (.xlsx). O sistema mapeia colunas automaticamente.</p>
+        <p className="text-sm text-muted-foreground">
+          Envie um arquivo CSV ou Excel (.xlsx) com as colunas:{" "}
+          <code className="rounded bg-muted px-1.5 py-0.5 text-xs">codigo, descricao, unidade, peso_cx</code>.
+          Produtos com código já existente serão atualizados automaticamente.
+        </p>
       </div>
 
       <div className="rounded-2xl border-2 border-dashed border-border bg-card p-8 text-center shadow-soft">
@@ -176,25 +177,6 @@ function ImportPage() {
 
       {rows.length > 0 && (
         <>
-          <div className="rounded-2xl border border-border bg-card p-6 shadow-soft">
-            <h2 className="font-semibold">Mapeamento de colunas</h2>
-            <p className="text-xs text-muted-foreground">Confirme qual coluna do seu arquivo corresponde a cada campo.</p>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              {FIELDS.map((f) => (
-                <div key={f.key} className="flex items-center gap-2">
-                  <div className="w-40 text-sm font-medium">{f.label}</div>
-                  <Select value={mapping[f.key] ?? "none"} onValueChange={(v) => setMapping({ ...mapping, [f.key]: v === "none" ? "" : v })}>
-                    <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">— Não mapear</SelectItem>
-                      {headers.map((h) => <SelectItem key={h} value={h}>{h}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
-              ))}
-            </div>
-          </div>
-
           <div className="rounded-2xl border border-border bg-card p-6 shadow-soft">
             <h2 className="font-semibold">Preview ({rows.length} linhas)</h2>
             <div className="mt-4 overflow-x-auto">
@@ -235,14 +217,15 @@ function ImportPage() {
             </div>
           )}
 
-          {done === rows.length && done > 0 && !importing && errors.length === 0 && (
+          {result && !importing && (
             <div className="rounded-2xl border border-green-500/30 bg-green-500/5 p-6 flex items-center gap-2 text-green-700">
-              <CheckCircle2 className="h-5 w-5" /> Importação concluída com sucesso!
+              <CheckCircle2 className="h-5 w-5" />
+              {result.created} produto(s) criado(s), {result.updated} atualizado(s).
             </div>
           )}
 
           <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => { setRows([]); setHeaders([]); setMapping({}); }}>Cancelar</Button>
+            <Button variant="outline" onClick={() => { setRows([]); setHeaders([]); setResult(null); }}>Cancelar</Button>
             <Button onClick={runImport} disabled={importing} className="rounded-full bg-primary">
               {importing ? "Importando..." : `Importar ${rows.length} produto(s)`}
             </Button>
