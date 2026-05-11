@@ -70,9 +70,15 @@ function AdminProducts() {
     queryFn: async () => (await supabase.from("categories").select("id, name").order("name")).data ?? [],
   });
 
-  const filtered = (products ?? []).filter((p) =>
-    p.name.toLowerCase().includes(search.toLowerCase()),
-  );
+  const filtered = (products ?? []).filter((p: any) => {
+    const q = search.toLowerCase().trim();
+    if (!q) return true;
+    return (
+      p.name?.toLowerCase().includes(q) ||
+      p.internal_code?.toLowerCase().includes(q) ||
+      p.slug?.toLowerCase().includes(q)
+    );
+  });
 
   const startNew = () => { setEditing({ name: "", is_active: true, is_featured: false }); setOpen(true); };
   const startEdit = (p: any) => { setEditing(p); setOpen(true); };
