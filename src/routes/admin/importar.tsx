@@ -32,6 +32,11 @@ function ImportPage() {
   const [errors, setErrors] = useState<string[]>([]);
   const [done, setDone] = useState(0);
   const [result, setResult] = useState<{ created: number; updated: number } | null>(null);
+  const [createdList, setCreatedList] = useState<{ codigo: string; descricao: string }[]>([]);
+  const [updatedList, setUpdatedList] = useState<{ codigo: string; descricao: string }[]>([]);
+  const [errorList, setErrorList] = useState<{ linha: number; codigo: string; descricao: string; motivo: string }[]>([]);
+  const [showCreated, setShowCreated] = useState(false);
+  const [showUpdated, setShowUpdated] = useState(false);
 
   const onFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
