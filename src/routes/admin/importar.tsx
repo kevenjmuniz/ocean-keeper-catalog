@@ -32,11 +32,17 @@ function ImportPage() {
   const [errors, setErrors] = useState<string[]>([]);
   const [done, setDone] = useState(0);
   const [result, setResult] = useState<{ created: number; updated: number } | null>(null);
+  const [createdList, setCreatedList] = useState<{ codigo: string; descricao: string }[]>([]);
+  const [updatedList, setUpdatedList] = useState<{ codigo: string; descricao: string }[]>([]);
+  const [errorList, setErrorList] = useState<{ linha: number; codigo: string; descricao: string; motivo: string }[]>([]);
+  const [showCreated, setShowCreated] = useState(false);
+  const [showUpdated, setShowUpdated] = useState(false);
 
   const onFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     setErrors([]); setDone(0); setProgress(0); setResult(null); setRows([]); setHeaders([]);
+    setCreatedList([]); setUpdatedList([]); setErrorList([]);
 
     try {
       let parsed: Row[] = [];
@@ -77,6 +83,7 @@ function ImportPage() {
 
   const runImport = async () => {
     setImporting(true); setErrors([]); setDone(0); setResult(null);
+    setCreatedList([]); setUpdatedList([]); setErrorList([]);
 
     // Preload existing products by internal_code
     const { data: existing } = await supabase
@@ -120,11 +127,20 @@ function ImportPage() {
     };
 
     const errs: string[] = [];
+    const errDetails: { linha: number; codigo: string; descricao: string; motivo: string }[] = [];
+    const createdItems: { codigo: string; descricao: string }[] = [];
+    const updatedItems: { codigo: string; descricao: string }[] = [];
     let created = 0;
     let updated = 0;
 
+    const pushErr = (linha: number, codigo: string, descricao: string, motivo: string) => {
+      errs.push(`Linha ${linha}${codigo ? ` (${codigo})` : ""}: ${motivo}`);
+      errDetails.push({ linha, codigo, descricao, motivo });
+    };
+
     for (let i = 0; i < rows.length; i++) {
       const r = rows[i];
+      const linha = i + 2;
       const codigo = String(r.codigo ?? "").trim();
       const descricao = String(r.descricao ?? "").trim();
       const unidade = String(r.unidade ?? "").trim() || null;
@@ -132,17 +148,17 @@ function ImportPage() {
       const peso_cx = pesoRaw ? Number(pesoRaw) : null;
       const categoriaRaw = String(r.categoria ?? "").trim();
 
-      if (!codigo) { errs.push(`Linha ${i + 2}: codigo vazio`); continue; }
-      if (!descricao) { errs.push(`Linha ${i + 2}: descricao vazia`); continue; }
+      if (!codigo) { pushErr(linha, "", descricao, "codigo vazio"); continue; }
+      if (!descricao) { pushErr(linha, codigo, "", "descricao vazia"); continue; }
       if (peso_cx !== null && Number.isNaN(peso_cx)) {
-        errs.push(`Linha ${i + 2}: peso_cx inválido`); continue;
+        pushErr(linha, codigo, descricao, `peso_cx inválido ("${pesoRaw}")`); continue;
       }
 
       let category_id: string | null = null;
       if (categoriaRaw) {
         category_id = await ensureCategory(categoriaRaw);
         if (!category_id) {
-          errs.push(`Linha ${i + 2}: falha ao criar/vincular categoria "${categoriaRaw}"`);
+          pushErr(linha, codigo, descricao, `falha ao criar/vincular categoria "${categoriaRaw}"`);
         }
       }
 
@@ -159,8 +175,8 @@ function ImportPage() {
           .from("products")
           .update(updatePayload)
           .eq("id", found.id);
-        if (error) errs.push(`Linha ${i + 2} (${codigo}): ${error.message}`);
-        else updated++;
+        if (error) pushErr(linha, codigo, descricao, error.message);
+        else { updated++; updatedItems.push({ codigo, descricao }); }
       } else {
         const slug = slugify(descricao) + "-" + slugify(codigo);
         const { error } = await supabase.from("products").insert({
@@ -172,8 +188,8 @@ function ImportPage() {
           is_active: true,
           category_id,
         });
-        if (error) errs.push(`Linha ${i + 2} (${codigo}): ${error.message}`);
-        else created++;
+        if (error) pushErr(linha, codigo, descricao, error.message);
+        else { created++; createdItems.push({ codigo, descricao }); }
       }
 
       setDone(i + 1);
@@ -181,6 +197,9 @@ function ImportPage() {
     }
 
     setErrors(errs);
+    setErrorList(errDetails);
+    setCreatedList(createdItems);
+    setUpdatedList(updatedItems);
     setResult({ created, updated });
     setImporting(false);
     toast.success(`Importação concluída: ${created} novos, ${updated} atualizados, ${errs.length} erro(s).`);
@@ -257,21 +276,133 @@ function ImportPage() {
             </div>
           )}
 
-          {errors.length > 0 && (
+          {errorList.length > 0 && (
             <div className="rounded-2xl border border-destructive/30 bg-destructive/5 p-6">
-              <div className="flex items-center gap-2 font-semibold text-destructive">
-                <AlertCircle className="h-4 w-4" /> {errors.length} erro(s)
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 font-semibold text-destructive">
+                  <AlertCircle className="h-4 w-4" /> {errorList.length} erro(s)
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    const csv =
+                      "linha,codigo,descricao,motivo\n" +
+                      errorList
+                        .map(
+                          (e) =>
+                            `${e.linha},"${e.codigo.replace(/"/g, '""')}","${e.descricao.replace(/"/g, '""')}","${e.motivo.replace(/"/g, '""')}"`
+                        )
+                        .join("\n");
+                    const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = "erros-importacao.csv";
+                    a.click();
+                    URL.revokeObjectURL(url);
+                  }}
+                >
+                  <Download className="h-3 w-3 mr-1" /> Baixar CSV
+                </Button>
               </div>
-              <ul className="mt-3 max-h-48 overflow-y-auto space-y-1 text-xs text-destructive">
-                {errors.slice(0, 50).map((e, i) => <li key={i}>• {e}</li>)}
-              </ul>
+              <div className="mt-3 max-h-72 overflow-y-auto rounded border border-destructive/20 bg-background">
+                <table className="w-full text-xs">
+                  <thead className="bg-destructive/10 text-destructive sticky top-0">
+                    <tr>
+                      <th className="px-2 py-1.5 text-left w-16">Linha</th>
+                      <th className="px-2 py-1.5 text-left w-28">Código</th>
+                      <th className="px-2 py-1.5 text-left">Descrição</th>
+                      <th className="px-2 py-1.5 text-left">Motivo</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {errorList.map((e, i) => (
+                      <tr key={i} className="border-t border-destructive/10">
+                        <td className="px-2 py-1.5">{e.linha}</td>
+                        <td className="px-2 py-1.5 font-mono">{e.codigo || "—"}</td>
+                        <td className="px-2 py-1.5">{e.descricao || "—"}</td>
+                        <td className="px-2 py-1.5 text-destructive">{e.motivo}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
 
           {result && !importing && (
-            <div className="rounded-2xl border border-green-500/30 bg-green-500/5 p-6 flex items-center gap-2 text-green-700">
-              <CheckCircle2 className="h-5 w-5" />
-              {result.created} produto(s) criado(s), {result.updated} atualizado(s).
+            <div className="rounded-2xl border border-green-500/30 bg-green-500/5 p-6 space-y-3">
+              <div className="flex items-center gap-2 text-green-700 font-medium">
+                <CheckCircle2 className="h-5 w-5" />
+                {result.created} produto(s) criado(s), {result.updated} atualizado(s).
+              </div>
+
+              {createdList.length > 0 && (
+                <div className="rounded-lg border border-green-500/20 bg-background">
+                  <button
+                    type="button"
+                    className="w-full flex items-center justify-between px-3 py-2 text-sm font-medium text-green-700 hover:bg-green-500/5"
+                    onClick={() => setShowCreated((v) => !v)}
+                  >
+                    <span>Ver {createdList.length} produto(s) criado(s)</span>
+                    <span className="text-xs">{showCreated ? "▲" : "▼"}</span>
+                  </button>
+                  {showCreated && (
+                    <div className="max-h-64 overflow-y-auto border-t border-green-500/20">
+                      <table className="w-full text-xs">
+                        <thead className="bg-green-500/10 text-green-700 sticky top-0">
+                          <tr>
+                            <th className="px-2 py-1.5 text-left w-28">Código</th>
+                            <th className="px-2 py-1.5 text-left">Descrição</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {createdList.map((p, i) => (
+                            <tr key={i} className="border-t border-green-500/10">
+                              <td className="px-2 py-1.5 font-mono">{p.codigo}</td>
+                              <td className="px-2 py-1.5">{p.descricao}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {updatedList.length > 0 && (
+                <div className="rounded-lg border border-green-500/20 bg-background">
+                  <button
+                    type="button"
+                    className="w-full flex items-center justify-between px-3 py-2 text-sm font-medium text-green-700 hover:bg-green-500/5"
+                    onClick={() => setShowUpdated((v) => !v)}
+                  >
+                    <span>Ver {updatedList.length} produto(s) atualizado(s)</span>
+                    <span className="text-xs">{showUpdated ? "▲" : "▼"}</span>
+                  </button>
+                  {showUpdated && (
+                    <div className="max-h-64 overflow-y-auto border-t border-green-500/20">
+                      <table className="w-full text-xs">
+                        <thead className="bg-green-500/10 text-green-700 sticky top-0">
+                          <tr>
+                            <th className="px-2 py-1.5 text-left w-28">Código</th>
+                            <th className="px-2 py-1.5 text-left">Descrição</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {updatedList.map((p, i) => (
+                            <tr key={i} className="border-t border-green-500/10">
+                              <td className="px-2 py-1.5 font-mono">{p.codigo}</td>
+                              <td className="px-2 py-1.5">{p.descricao}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
 
