@@ -276,21 +276,133 @@ function ImportPage() {
             </div>
           )}
 
-          {errors.length > 0 && (
+          {errorList.length > 0 && (
             <div className="rounded-2xl border border-destructive/30 bg-destructive/5 p-6">
-              <div className="flex items-center gap-2 font-semibold text-destructive">
-                <AlertCircle className="h-4 w-4" /> {errors.length} erro(s)
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 font-semibold text-destructive">
+                  <AlertCircle className="h-4 w-4" /> {errorList.length} erro(s)
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    const csv =
+                      "linha,codigo,descricao,motivo\n" +
+                      errorList
+                        .map(
+                          (e) =>
+                            `${e.linha},"${e.codigo.replace(/"/g, '""')}","${e.descricao.replace(/"/g, '""')}","${e.motivo.replace(/"/g, '""')}"`
+                        )
+                        .join("\n");
+                    const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = "erros-importacao.csv";
+                    a.click();
+                    URL.revokeObjectURL(url);
+                  }}
+                >
+                  <Download className="h-3 w-3 mr-1" /> Baixar CSV
+                </Button>
               </div>
-              <ul className="mt-3 max-h-48 overflow-y-auto space-y-1 text-xs text-destructive">
-                {errors.slice(0, 50).map((e, i) => <li key={i}>• {e}</li>)}
-              </ul>
+              <div className="mt-3 max-h-72 overflow-y-auto rounded border border-destructive/20 bg-background">
+                <table className="w-full text-xs">
+                  <thead className="bg-destructive/10 text-destructive sticky top-0">
+                    <tr>
+                      <th className="px-2 py-1.5 text-left w-16">Linha</th>
+                      <th className="px-2 py-1.5 text-left w-28">Código</th>
+                      <th className="px-2 py-1.5 text-left">Descrição</th>
+                      <th className="px-2 py-1.5 text-left">Motivo</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {errorList.map((e, i) => (
+                      <tr key={i} className="border-t border-destructive/10">
+                        <td className="px-2 py-1.5">{e.linha}</td>
+                        <td className="px-2 py-1.5 font-mono">{e.codigo || "—"}</td>
+                        <td className="px-2 py-1.5">{e.descricao || "—"}</td>
+                        <td className="px-2 py-1.5 text-destructive">{e.motivo}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
 
           {result && !importing && (
-            <div className="rounded-2xl border border-green-500/30 bg-green-500/5 p-6 flex items-center gap-2 text-green-700">
-              <CheckCircle2 className="h-5 w-5" />
-              {result.created} produto(s) criado(s), {result.updated} atualizado(s).
+            <div className="rounded-2xl border border-green-500/30 bg-green-500/5 p-6 space-y-3">
+              <div className="flex items-center gap-2 text-green-700 font-medium">
+                <CheckCircle2 className="h-5 w-5" />
+                {result.created} produto(s) criado(s), {result.updated} atualizado(s).
+              </div>
+
+              {createdList.length > 0 && (
+                <div className="rounded-lg border border-green-500/20 bg-background">
+                  <button
+                    type="button"
+                    className="w-full flex items-center justify-between px-3 py-2 text-sm font-medium text-green-700 hover:bg-green-500/5"
+                    onClick={() => setShowCreated((v) => !v)}
+                  >
+                    <span>Ver {createdList.length} produto(s) criado(s)</span>
+                    <span className="text-xs">{showCreated ? "▲" : "▼"}</span>
+                  </button>
+                  {showCreated && (
+                    <div className="max-h-64 overflow-y-auto border-t border-green-500/20">
+                      <table className="w-full text-xs">
+                        <thead className="bg-green-500/10 text-green-700 sticky top-0">
+                          <tr>
+                            <th className="px-2 py-1.5 text-left w-28">Código</th>
+                            <th className="px-2 py-1.5 text-left">Descrição</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {createdList.map((p, i) => (
+                            <tr key={i} className="border-t border-green-500/10">
+                              <td className="px-2 py-1.5 font-mono">{p.codigo}</td>
+                              <td className="px-2 py-1.5">{p.descricao}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {updatedList.length > 0 && (
+                <div className="rounded-lg border border-green-500/20 bg-background">
+                  <button
+                    type="button"
+                    className="w-full flex items-center justify-between px-3 py-2 text-sm font-medium text-green-700 hover:bg-green-500/5"
+                    onClick={() => setShowUpdated((v) => !v)}
+                  >
+                    <span>Ver {updatedList.length} produto(s) atualizado(s)</span>
+                    <span className="text-xs">{showUpdated ? "▲" : "▼"}</span>
+                  </button>
+                  {showUpdated && (
+                    <div className="max-h-64 overflow-y-auto border-t border-green-500/20">
+                      <table className="w-full text-xs">
+                        <thead className="bg-green-500/10 text-green-700 sticky top-0">
+                          <tr>
+                            <th className="px-2 py-1.5 text-left w-28">Código</th>
+                            <th className="px-2 py-1.5 text-left">Descrição</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {updatedList.map((p, i) => (
+                            <tr key={i} className="border-t border-green-500/10">
+                              <td className="px-2 py-1.5 font-mono">{p.codigo}</td>
+                              <td className="px-2 py-1.5">{p.descricao}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
 
