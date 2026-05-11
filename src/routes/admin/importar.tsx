@@ -42,6 +42,7 @@ function ImportPage() {
     const file = e.target.files?.[0];
     if (!file) return;
     setErrors([]); setDone(0); setProgress(0); setResult(null); setRows([]); setHeaders([]);
+    setCreatedList([]); setUpdatedList([]); setErrorList([]);
 
     try {
       let parsed: Row[] = [];
