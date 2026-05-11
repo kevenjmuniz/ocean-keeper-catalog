@@ -83,6 +83,7 @@ function ImportPage() {
 
   const runImport = async () => {
     setImporting(true); setErrors([]); setDone(0); setResult(null);
+    setCreatedList([]); setUpdatedList([]); setErrorList([]);
 
     // Preload existing products by internal_code
     const { data: existing } = await supabase
