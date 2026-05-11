@@ -127,11 +127,20 @@ function ImportPage() {
     };
 
     const errs: string[] = [];
+    const errDetails: { linha: number; codigo: string; descricao: string; motivo: string }[] = [];
+    const createdItems: { codigo: string; descricao: string }[] = [];
+    const updatedItems: { codigo: string; descricao: string }[] = [];
     let created = 0;
     let updated = 0;
 
+    const pushErr = (linha: number, codigo: string, descricao: string, motivo: string) => {
+      errs.push(`Linha ${linha}${codigo ? ` (${codigo})` : ""}: ${motivo}`);
+      errDetails.push({ linha, codigo, descricao, motivo });
+    };
+
     for (let i = 0; i < rows.length; i++) {
       const r = rows[i];
+      const linha = i + 2;
       const codigo = String(r.codigo ?? "").trim();
       const descricao = String(r.descricao ?? "").trim();
       const unidade = String(r.unidade ?? "").trim() || null;
@@ -139,17 +148,17 @@ function ImportPage() {
       const peso_cx = pesoRaw ? Number(pesoRaw) : null;
       const categoriaRaw = String(r.categoria ?? "").trim();
 
-      if (!codigo) { errs.push(`Linha ${i + 2}: codigo vazio`); continue; }
-      if (!descricao) { errs.push(`Linha ${i + 2}: descricao vazia`); continue; }
+      if (!codigo) { pushErr(linha, "", descricao, "codigo vazio"); continue; }
+      if (!descricao) { pushErr(linha, codigo, "", "descricao vazia"); continue; }
       if (peso_cx !== null && Number.isNaN(peso_cx)) {
-        errs.push(`Linha ${i + 2}: peso_cx inválido`); continue;
+        pushErr(linha, codigo, descricao, `peso_cx inválido ("${pesoRaw}")`); continue;
       }
 
       let category_id: string | null = null;
       if (categoriaRaw) {
         category_id = await ensureCategory(categoriaRaw);
         if (!category_id) {
-          errs.push(`Linha ${i + 2}: falha ao criar/vincular categoria "${categoriaRaw}"`);
+          pushErr(linha, codigo, descricao, `falha ao criar/vincular categoria "${categoriaRaw}"`);
         }
       }
 
@@ -166,8 +175,8 @@ function ImportPage() {
           .from("products")
           .update(updatePayload)
           .eq("id", found.id);
-        if (error) errs.push(`Linha ${i + 2} (${codigo}): ${error.message}`);
-        else updated++;
+        if (error) pushErr(linha, codigo, descricao, error.message);
+        else { updated++; updatedItems.push({ codigo, descricao }); }
       } else {
         const slug = slugify(descricao) + "-" + slugify(codigo);
         const { error } = await supabase.from("products").insert({
@@ -179,8 +188,8 @@ function ImportPage() {
           is_active: true,
           category_id,
         });
-        if (error) errs.push(`Linha ${i + 2} (${codigo}): ${error.message}`);
-        else created++;
+        if (error) pushErr(linha, codigo, descricao, error.message);
+        else { created++; createdItems.push({ codigo, descricao }); }
       }
 
       setDone(i + 1);
@@ -188,6 +197,9 @@ function ImportPage() {
     }
 
     setErrors(errs);
+    setErrorList(errDetails);
+    setCreatedList(createdItems);
+    setUpdatedList(updatedItems);
     setResult({ created, updated });
     setImporting(false);
     toast.success(`Importação concluída: ${created} novos, ${updated} atualizados, ${errs.length} erro(s).`);
