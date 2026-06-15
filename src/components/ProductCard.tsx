@@ -10,6 +10,7 @@ export type ProductCardData = {
   description?: string | null;
   weight_kg?: number | null;
   unit?: string | null;
+  internal_code?: string | null;
   image_url?: string | null;
   category?: { name: string } | null;
 };
@@ -54,6 +55,9 @@ export function ProductCard({ p, index = 0 }: { p: ProductCardData; index?: numb
           <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
             {p.weight_kg && <span className="rounded-md bg-muted px-2 py-1">Caixa {p.weight_kg} kg</span>}
             {p.unit && <span className="rounded-md bg-muted px-2 py-1">{p.unit}</span>}
+            {p.internal_code && (
+              <span className="rounded-md bg-muted px-2 py-1 font-mono">Cód. {p.internal_code}</span>
+            )}
           </div>
         </div>
       </Link>
