@@ -22,7 +22,6 @@ function ProductPage() {
         .from("products")
         .select("*, category:categories(id, name, slug)")
         .eq("slug", slug)
-        .eq("is_active", true)
         .maybeSingle();
       if (error) throw error;
       return data;
@@ -72,18 +71,31 @@ function ProductPage() {
               </dl>
 
               <div className="mt-10 flex flex-wrap gap-3">
-                <Button asChild size="lg" className="rounded-full bg-gradient-ocean shadow-glow">
-                  <a
-                    href={buildWhatsAppLink(`Olá M2i, gostaria de orçamento para *${product.name}*${product.internal_code ? ` (cód. ${product.internal_code})` : ""}.`)}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Solicitar orçamento via WhatsApp
-                  </a>
-                </Button>
-                <Button asChild variant="outline" size="lg" className="rounded-full">
-                  <Link to="/">Ver mais produtos</Link>
-                </Button>
+                {(product as any).is_available === false ? (
+                  <div className="flex items-center gap-3">
+                    <span className="inline-flex items-center rounded-full border border-border bg-muted px-4 py-2 text-sm font-medium text-muted-foreground">
+                      Indisponível no momento
+                    </span>
+                    <Button asChild variant="outline" size="lg" className="rounded-full">
+                      <Link to="/">Ver mais produtos</Link>
+                    </Button>
+                  </div>
+                ) : (
+                  <>
+                    <Button asChild size="lg" className="rounded-full bg-gradient-ocean shadow-glow">
+                      <a
+                        href={buildWhatsAppLink(`Olá M2i, gostaria de orçamento para *${product.name}*${product.internal_code ? ` (cód. ${product.internal_code})` : ""}.`)}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        Solicitar orçamento via WhatsApp
+                      </a>
+                    </Button>
+                    <Button asChild variant="outline" size="lg" className="rounded-full">
+                      <Link to="/">Ver mais produtos</Link>
+                    </Button>
+                  </>
+                )}
               </div>
             </div>
           </div>
