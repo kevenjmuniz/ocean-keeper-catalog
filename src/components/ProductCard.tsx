@@ -10,6 +10,7 @@ export type ProductCardData = {
   description?: string | null;
   weight_kg?: number | null;
   unit?: string | null;
+  internal_code?: string | null;
   image_url?: string | null;
   category?: { name: string } | null;
 };
