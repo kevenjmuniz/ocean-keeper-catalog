@@ -227,23 +227,6 @@ function CatalogHome() {
               </ul>
             </div>
 
-            <div className="rounded-2xl border border-border bg-card p-4">
-              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-ocean">
-                <SlidersHorizontal className="h-3.5 w-3.5" /> Atendimento B2B
-              </div>
-              <p className="mt-2 text-xs text-muted-foreground leading-relaxed">
-                Pedidos mínimos por caixa fechada. Solicite cotação direta pelo WhatsApp em cada produto.
-              </p>
-            </div>
-
-            <div className="hidden lg:flex justify-center pt-2">
-              <img
-                src={mascoteImg}
-                alt="Mascote M2i Comercial"
-                className="w-full max-w-[200px] h-auto select-none pointer-events-none"
-                loading="lazy"
-              />
-            </div>
           </div>
         </aside>
 
