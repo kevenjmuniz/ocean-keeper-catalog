@@ -76,7 +76,7 @@ function CatalogHome() {
   const { data: counts } = useQuery({
     queryKey: ["product-count", search.category, debounced],
     queryFn: async () => {
-      let q = supabase.from("products").select("id", { count: "exact", head: true }).eq("is_active", true);
+      let q = supabase.from("products").select("id", { count: "exact", head: true });
       if (search.category) {
         const cat = categories?.find((c) => c.slug === search.category);
         if (cat) q = q.eq("category_id", cat.id);
@@ -98,9 +98,9 @@ function CatalogHome() {
       const to = from + PAGE_SIZE - 1;
       let q = supabase
         .from("products")
-        .select("id, slug, name, description, weight_kg, unit, internal_code, image_url, category:categories(name, slug)")
-        .eq("is_active", true)
+        .select("id, slug, name, description, weight_kg, unit, internal_code, image_url, is_available, category:categories(name, slug)")
         .order("is_featured", { ascending: false })
+        .order("is_available", { ascending: false })
         .order("name")
         .range(from, to);
 
@@ -240,7 +240,7 @@ function CatalogHome() {
                   : "Todos os produtos"}
               </h1>
               <p className="text-xs text-muted-foreground mt-0.5">
-                {counts != null ? `${counts} produto${counts === 1 ? "" : "s"} disponíveis` : "Carregando..."}
+                {counts != null ? `${counts} produto${counts === 1 ? "" : "s"}` : "Carregando..."}
                 {debounced && ` — buscando "${debounced}"`}
               </p>
             </div>
