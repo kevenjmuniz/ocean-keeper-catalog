@@ -45,7 +45,6 @@ type Product = {
   gallery_images?: string[] | null;
   is_featured?: boolean;
   is_active?: boolean;
-  is_available?: boolean;
 };
 
 function AdminProducts() {
@@ -81,17 +80,11 @@ function AdminProducts() {
     );
   });
 
-  const startNew = () => { setEditing({ name: "", is_active: true, is_featured: false, is_available: true }); setOpen(true); };
+  const startNew = () => { setEditing({ name: "", is_active: true, is_featured: false }); setOpen(true); };
   const startEdit = (p: any) => { setEditing(p); setOpen(true); };
 
   const toggleActive = async (p: any) => {
     const { error } = await supabase.from("products").update({ is_active: !p.is_active }).eq("id", p.id);
-    if (error) toast.error(error.message);
-    else { toast.success("Atualizado"); qc.invalidateQueries({ queryKey: ["admin-products"] }); }
-  };
-
-  const toggleAvailable = async (p: any) => {
-    const { error } = await supabase.from("products").update({ is_available: !p.is_available }).eq("id", p.id);
     if (error) toast.error(error.message);
     else { toast.success("Atualizado"); qc.invalidateQueries({ queryKey: ["admin-products"] }); }
   };
@@ -128,7 +121,6 @@ function AdminProducts() {
               <th className="px-4 py-3 text-left">Caixa</th>
               <th className="px-4 py-3 text-left">Código</th>
               <th className="px-4 py-3 text-center">Ativo</th>
-              <th className="px-4 py-3 text-center">Disponível</th>
               <th className="px-4 py-3 text-right">Ações</th>
             </tr>
           </thead>
@@ -152,9 +144,6 @@ function AdminProducts() {
                 <td className="px-4 py-3 text-center">
                   <Switch checked={p.is_active} onCheckedChange={() => toggleActive(p)} />
                 </td>
-                <td className="px-4 py-3 text-center">
-                  <Switch checked={p.is_available !== false} onCheckedChange={() => toggleAvailable(p)} />
-                </td>
                 <td className="px-4 py-3 text-right">
                   <button onClick={() => startEdit(p)} className="rounded p-2 hover:bg-muted"><Pencil className="h-4 w-4" /></button>
                   <button onClick={() => remove(p)} className="rounded p-2 hover:bg-destructive/10 text-destructive"><Trash2 className="h-4 w-4" /></button>
@@ -162,7 +151,7 @@ function AdminProducts() {
               </tr>
             ))}
             {filtered.length === 0 && (
-              <tr><td colSpan={7} className="px-4 py-12 text-center text-muted-foreground">Nenhum produto.</td></tr>
+              <tr><td colSpan={6} className="px-4 py-12 text-center text-muted-foreground">Nenhum produto.</td></tr>
             )}
           </tbody>
         </table>
@@ -188,11 +177,11 @@ function ProductDialog({
   categories: { id: string; name: string }[];
   onSaved: () => void;
 }) {
-  const [form, setForm] = useState<Product>(editing ?? { name: "", is_active: true, is_available: true });
+  const [form, setForm] = useState<Product>(editing ?? { name: "", is_active: true });
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (open) setForm(editing ?? { name: "", is_active: true, is_available: true });
+    if (open) setForm(editing ?? { name: "", is_active: true });
   }, [open, editing]);
 
   const set = <K extends keyof Product>(k: K, v: Product[K]) => setForm({ ...form, [k]: v });
@@ -224,7 +213,6 @@ function ProductDialog({
         gallery_images: form.gallery_images ?? [],
         is_active: !!form.is_active,
         is_featured: !!form.is_featured,
-        is_available: form.is_available !== false,
       };
       if (form.id) {
         const { error } = await supabase.from("products").update(payload).eq("id", form.id);
@@ -346,9 +334,6 @@ function ProductDialog({
             </label>
             <label className="flex items-center gap-2 text-sm">
               <Switch checked={!!form.is_featured} onCheckedChange={(v) => set("is_featured", v)} /> Destaque
-            </label>
-            <label className="flex items-center gap-2 text-sm">
-              <Switch checked={form.is_available !== false} onCheckedChange={(v) => set("is_available", v)} /> Disponível
             </label>
           </div>
           <DialogFooter>
