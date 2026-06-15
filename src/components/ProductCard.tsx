@@ -12,15 +12,13 @@ export type ProductCardData = {
   unit?: string | null;
   internal_code?: string | null;
   image_url?: string | null;
-  is_available?: boolean | null;
   category?: { name: string } | null;
 };
 
 export function ProductCard({ p, index = 0 }: { p: ProductCardData; index?: number }) {
-  const unavailable = p.is_available === false;
   return (
     <article
-      className={`group relative flex h-full flex-col overflow-hidden rounded-2xl border bg-card shadow-soft transition-smooth hover:-translate-y-1 hover:shadow-elegant animate-card-in ${unavailable ? "border-border/40 opacity-70" : "border-border"}`}
+      className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-soft transition-smooth hover:-translate-y-1 hover:shadow-elegant animate-card-in"
       style={{ animationDelay: `${Math.min(index, 15) * 30}ms` }}
     >
       <Link to="/produto/$slug" params={{ slug: p.slug }} className="flex flex-1 flex-col">
@@ -30,18 +28,11 @@ export function ProductCard({ p, index = 0 }: { p: ProductCardData; index?: numb
               src={p.image_url}
               alt={p.name}
               loading="lazy"
-              className={`h-full w-full object-cover transition-smooth group-hover:scale-105 ${unavailable ? "grayscale" : ""}`}
+              className="h-full w-full object-cover transition-smooth group-hover:scale-105"
             />
           ) : (
             <div className="flex h-full w-full items-center justify-center text-muted-foreground text-xs">
               Sem imagem
-            </div>
-          )}
-          {unavailable && (
-            <div className="absolute inset-0 flex items-center justify-center bg-background/60 backdrop-blur-[1px]">
-              <span className="rounded-full bg-muted px-3 py-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider border border-border">
-                Indisponível no momento
-              </span>
             </div>
           )}
           <div className="absolute top-3 left-3 inline-flex items-center gap-1 rounded-full bg-background/90 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-primary backdrop-blur">
@@ -71,24 +62,18 @@ export function ProductCard({ p, index = 0 }: { p: ProductCardData; index?: numb
         </div>
       </Link>
       <div className="mt-auto px-5 pb-5">
-        {unavailable ? (
-          <Button disabled className="w-full rounded-xl" variant="outline">
-            Indisponível no momento
-          </Button>
-        ) : (
-          <Button
-            asChild
-            className="w-full rounded-xl bg-gradient-ocean text-primary-foreground hover:opacity-95 shadow-soft"
+        <Button
+          asChild
+          className="w-full rounded-xl bg-gradient-ocean text-primary-foreground hover:opacity-95 shadow-soft"
+        >
+          <a
+            href={buildWhatsAppLink(`Olá M2i, gostaria de um orçamento para *${p.name}*.`)}
+            target="_blank"
+            rel="noreferrer"
           >
-            <a
-              href={buildWhatsAppLink(`Olá M2i, gostaria de um orçamento para *${p.name}*.`)}
-              target="_blank"
-              rel="noreferrer"
-            >
-              Solicitar orçamento
-            </a>
-          </Button>
-        )}
+            Solicitar orçamento
+          </a>
+        </Button>
       </div>
     </article>
   );
