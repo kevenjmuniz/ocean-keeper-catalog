@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/pagination";
 import mascoteImg from "@/assets/mascote-m2i.png";
 
-const PAGE_SIZE = 16;
+const PAGE_SIZE = 18;
 
 const searchSchema = z.object({
   category: z.string().optional(),
