@@ -93,7 +93,7 @@ type Product = {
   gallery_images?: string[] | null;
   is_featured?: boolean;
   is_active?: boolean;
-  is_available?: boolean;
+  
 };
 
 function AdminProducts() {
