@@ -98,9 +98,8 @@ function CatalogHome() {
       const to = from + PAGE_SIZE - 1;
       let q = supabase
         .from("products")
-        .select("id, slug, name, description, weight_kg, unit, internal_code, image_url, is_available, category:categories(name, slug)")
+        .select("id, slug, name, description, weight_kg, unit, internal_code, image_url, category:categories(name, slug)")
         .order("is_featured", { ascending: false })
-        .order("is_available", { ascending: false })
         .order("name")
         .range(from, to);
 
