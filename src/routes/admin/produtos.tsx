@@ -396,9 +396,6 @@ function ProductDialog({
             <label className="flex items-center gap-2 text-sm">
               <Switch checked={!!form.is_featured} onCheckedChange={(v) => set("is_featured", v)} /> Destaque
             </label>
-            <label className="flex items-center gap-2 text-sm">
-              <Switch checked={form.is_available !== false} onCheckedChange={(v) => set("is_available", v)} /> Disponível
-            </label>
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
