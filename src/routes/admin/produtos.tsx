@@ -39,9 +39,8 @@ export const Route = createFileRoute("/admin/produtos")({
 
 function buildRows(rows: any[]) {
   const cols = [
-    "name", "slug", "category", "subcategory", "internal_code",
-    "weight_kg", "unit", "price", "is_active", "is_featured",
-    "image_url", "gallery_images", "description",
+    "name", "slug", "category", "internal_code",
+    "weight_kg", "unit", "is_featured", "description",
   ];
   const data = rows.map((r) => {
     const o: Record<string, any> = {};
