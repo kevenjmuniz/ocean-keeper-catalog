@@ -129,7 +129,7 @@ function AdminProducts() {
     );
   });
 
-  const startNew = () => { setEditing({ name: "", is_active: true, is_featured: false, is_available: true }); setOpen(true); };
+  const startNew = () => { setEditing({ name: "", is_active: true, is_featured: false }); setOpen(true); };
   const startEdit = (p: any) => { setEditing(p); setOpen(true); };
 
   const toggleActive = async (p: any) => {
