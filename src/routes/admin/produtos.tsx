@@ -238,11 +238,11 @@ function ProductDialog({
   categories: { id: string; name: string }[];
   onSaved: () => void;
 }) {
-  const [form, setForm] = useState<Product>(editing ?? { name: "", is_active: true, is_available: true });
+  const [form, setForm] = useState<Product>(editing ?? { name: "", is_active: true });
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (open) setForm(editing ?? { name: "", is_active: true, is_available: true });
+    if (open) setForm(editing ?? { name: "", is_active: true });
   }, [open, editing]);
 
   const set = <K extends keyof Product>(k: K, v: Product[K]) => setForm({ ...form, [k]: v });
