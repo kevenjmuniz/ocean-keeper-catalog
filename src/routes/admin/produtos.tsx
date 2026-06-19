@@ -93,7 +93,7 @@ type Product = {
   gallery_images?: string[] | null;
   is_featured?: boolean;
   is_active?: boolean;
-  is_available?: boolean;
+  
 };
 
 function AdminProducts() {
@@ -129,7 +129,7 @@ function AdminProducts() {
     );
   });
 
-  const startNew = () => { setEditing({ name: "", is_active: true, is_featured: false, is_available: true }); setOpen(true); };
+  const startNew = () => { setEditing({ name: "", is_active: true, is_featured: false }); setOpen(true); };
   const startEdit = (p: any) => { setEditing(p); setOpen(true); };
 
   const toggleActive = async (p: any) => {
@@ -238,11 +238,11 @@ function ProductDialog({
   categories: { id: string; name: string }[];
   onSaved: () => void;
 }) {
-  const [form, setForm] = useState<Product>(editing ?? { name: "", is_active: true, is_available: true });
+  const [form, setForm] = useState<Product>(editing ?? { name: "", is_active: true });
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (open) setForm(editing ?? { name: "", is_active: true, is_available: true });
+    if (open) setForm(editing ?? { name: "", is_active: true });
   }, [open, editing]);
 
   const set = <K extends keyof Product>(k: K, v: Product[K]) => setForm({ ...form, [k]: v });
@@ -274,7 +274,6 @@ function ProductDialog({
         gallery_images: form.gallery_images ?? [],
         is_active: !!form.is_active,
         is_featured: !!form.is_featured,
-        is_available: form.is_available !== false,
       };
       if (form.id) {
         const { error } = await supabase.from("products").update(payload).eq("id", form.id);
@@ -396,9 +395,6 @@ function ProductDialog({
             </label>
             <label className="flex items-center gap-2 text-sm">
               <Switch checked={!!form.is_featured} onCheckedChange={(v) => set("is_featured", v)} /> Destaque
-            </label>
-            <label className="flex items-center gap-2 text-sm">
-              <Switch checked={form.is_available !== false} onCheckedChange={(v) => set("is_available", v)} /> Disponível
             </label>
           </div>
           <DialogFooter>
