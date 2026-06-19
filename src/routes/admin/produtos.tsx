@@ -37,21 +37,30 @@ export const Route = createFileRoute("/admin/produtos")({
   component: AdminProducts,
 });
 
-function exportProducts(rows: any[]) {
+function buildRows(rows: any[]) {
   const cols = [
     "name", "slug", "category", "subcategory", "internal_code",
     "weight_kg", "unit", "price", "is_active", "is_featured",
     "image_url", "gallery_images", "description",
   ];
+  const data = rows.map((r) => {
+    const o: Record<string, any> = {};
+    for (const c of cols) {
+      const v = c === "category" ? r.category?.name : r[c];
+      o[c] = Array.isArray(v) ? v.join("|") : v ?? "";
+    }
+    return o;
+  });
+  return { cols, data };
+}
+
+function exportProductsCSV(rows: any[]) {
+  const { cols, data } = buildRows(rows);
   const esc = (v: any) => {
-    if (v === null || v === undefined) return "";
-    const s = Array.isArray(v) ? v.join("|") : String(v);
+    const s = String(v ?? "");
     return /[",\n;]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
   };
-  const lines = [cols.join(",")];
-  for (const r of rows) {
-    lines.push(cols.map((c) => esc(c === "category" ? r.category?.name : r[c])).join(","));
-  }
+  const lines = [cols.join(","), ...data.map((r) => cols.map((c) => esc(r[c])).join(","))];
   const blob = new Blob(["\ufeff" + lines.join("\n")], { type: "text/csv;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -60,6 +69,15 @@ function exportProducts(rows: any[]) {
   a.click();
   URL.revokeObjectURL(url);
 }
+
+function exportProductsXLSX(rows: any[]) {
+  const { cols, data } = buildRows(rows);
+  const ws = XLSX.utils.json_to_sheet(data, { header: cols });
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Produtos");
+  XLSX.writeFile(wb, `produtos-${new Date().toISOString().slice(0, 10)}.xlsx`);
+}
+
 
 type Product = {
   id?: string;
