@@ -110,6 +110,9 @@ function AdminProducts() {
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Buscar..." className="pl-9" />
           </div>
+          <Button onClick={() => exportProducts(filtered)} variant="outline" className="rounded-full">
+            <Download className="h-4 w-4 mr-1" /> Exportar
+          </Button>
           <Button onClick={startNew} className="rounded-full bg-primary"><Plus className="h-4 w-4 mr-1" /> Novo</Button>
         </div>
       </div>
