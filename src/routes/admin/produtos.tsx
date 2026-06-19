@@ -274,7 +274,6 @@ function ProductDialog({
         gallery_images: form.gallery_images ?? [],
         is_active: !!form.is_active,
         is_featured: !!form.is_featured,
-        is_available: form.is_available !== false,
       };
       if (form.id) {
         const { error } = await supabase.from("products").update(payload).eq("id", form.id);
