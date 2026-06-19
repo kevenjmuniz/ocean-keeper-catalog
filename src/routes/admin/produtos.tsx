@@ -30,6 +30,30 @@ export const Route = createFileRoute("/admin/produtos")({
   component: AdminProducts,
 });
 
+function exportProducts(rows: any[]) {
+  const cols = [
+    "name", "slug", "category", "subcategory", "internal_code",
+    "weight_kg", "unit", "price", "is_active", "is_featured",
+    "image_url", "gallery_images", "description",
+  ];
+  const esc = (v: any) => {
+    if (v === null || v === undefined) return "";
+    const s = Array.isArray(v) ? v.join("|") : String(v);
+    return /[",\n;]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+  const lines = [cols.join(",")];
+  for (const r of rows) {
+    lines.push(cols.map((c) => esc(c === "category" ? r.category?.name : r[c])).join(","));
+  }
+  const blob = new Blob(["\ufeff" + lines.join("\n")], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `produtos-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 type Product = {
   id?: string;
   name: string;
