@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Snowflake } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { buildWhatsAppLink } from "@/lib/format";
+import { QuoteButton } from "@/components/QuoteButton";
 
 export type ProductCardData = {
   id: string;
@@ -76,18 +76,12 @@ export function ProductCard({ p, index = 0 }: { p: ProductCardData; index?: numb
             Indisponível no momento
           </Button>
         ) : (
-          <Button
-            asChild
+          <QuoteButton
+            message={`Olá M2i, gostaria de um orçamento para *${p.name}*.`}
             className="w-full rounded-xl bg-gradient-ocean text-primary-foreground hover:opacity-95 shadow-soft"
           >
-            <a
-              href={buildWhatsAppLink(`Olá M2i, gostaria de um orçamento para *${p.name}*.`)}
-              target="_blank"
-              rel="noreferrer"
-            >
-              Solicitar orçamento
-            </a>
-          </Button>
+            Solicitar orçamento
+          </QuoteButton>
         )}
       </div>
     </article>

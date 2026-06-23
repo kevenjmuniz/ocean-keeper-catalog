@@ -5,7 +5,7 @@ import { SlidersHorizontal, Layers, Filter } from "lucide-react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { SiteHeader } from "@/components/SiteHeader";
-import { WhatsAppFab } from "@/components/WhatsAppFab";
+import { QuoteFab } from "@/components/QuoteButton";
 import { ProductCard, type ProductCardData } from "@/components/ProductCard";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -76,7 +76,7 @@ function CatalogHome() {
   const { data: counts } = useQuery({
     queryKey: ["product-count", search.category, debounced],
     queryFn: async () => {
-      let q = supabase.from("products").select("id", { count: "exact", head: true });
+      let q = supabase.from("products").select("id", { count: "exact", head: true }).eq("is_active", true);
       if (search.category) {
         const cat = categories?.find((c) => c.slug === search.category);
         if (cat) q = q.eq("category_id", cat.id);
@@ -99,6 +99,7 @@ function CatalogHome() {
       let q = supabase
         .from("products")
         .select("id, slug, name, description, weight_kg, unit, internal_code, image_url, category:categories(name, slug)")
+        .eq("is_active", true)
         .order("is_featured", { ascending: false })
         .order("name")
         .range(from, to);
@@ -312,7 +313,7 @@ function CatalogHome() {
         </section>
       </div>
 
-      <WhatsAppFab />
+      <QuoteFab />
     </div>
   );
 }
