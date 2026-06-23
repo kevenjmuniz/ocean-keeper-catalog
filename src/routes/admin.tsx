@@ -1,7 +1,7 @@
 import { createFileRoute, Link, Outlet, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { Fish, LayoutDashboard, Package, Tags, Upload, LogOut } from "lucide-react";
+import { Fish, LayoutDashboard, Package, Tags, Upload, LogOut, Users } from "lucide-react";
 import logoM2i from "@/assets/logo-m2i.png";
 
 export const Route = createFileRoute("/admin")({
@@ -12,6 +12,7 @@ const links = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/admin/produtos", label: "Produtos", icon: Package },
   { to: "/admin/categorias", label: "Categorias", icon: Tags },
+  { to: "/admin/vendedores", label: "Vendedores", icon: Users },
   { to: "/admin/importar", label: "Importar", icon: Upload },
 ];
 

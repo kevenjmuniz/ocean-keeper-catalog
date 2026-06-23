@@ -4,10 +4,10 @@ import { useState, useEffect } from "react";
 import { ArrowLeft, ChevronLeft, ChevronRight, Snowflake, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { SiteHeader } from "@/components/SiteHeader";
-import { WhatsAppFab } from "@/components/WhatsAppFab";
+import { QuoteFab, QuoteButton } from "@/components/QuoteButton";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { buildWhatsAppLink, formatBRL } from "@/lib/format";
+import { formatBRL } from "@/lib/format";
 
 export const Route = createFileRoute("/produto/$slug")({
   component: ProductPage,
@@ -22,6 +22,7 @@ function ProductPage() {
         .from("products")
         .select("*, category:categories(id, name, slug)")
         .eq("slug", slug)
+        .eq("is_active", true)
         .maybeSingle();
       if (error) throw error;
       return data;
@@ -82,15 +83,13 @@ function ProductPage() {
                   </div>
                 ) : (
                   <>
-                    <Button asChild size="lg" className="rounded-full bg-gradient-ocean shadow-glow">
-                      <a
-                        href={buildWhatsAppLink(`Olá M2i, gostaria de orçamento para *${product.name}*${product.internal_code ? ` (cód. ${product.internal_code})` : ""}.`)}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        Solicitar orçamento via WhatsApp
-                      </a>
-                    </Button>
+                    <QuoteButton
+                      size="lg"
+                      className="rounded-full bg-gradient-ocean shadow-glow"
+                      message={`Olá M2i, gostaria de orçamento para *${product.name}*${product.internal_code ? ` (cód. ${product.internal_code})` : ""}.`}
+                    >
+                      Solicitar orçamento via WhatsApp
+                    </QuoteButton>
                     <Button asChild variant="outline" size="lg" className="rounded-full">
                       <Link to="/">Ver mais produtos</Link>
                     </Button>
@@ -101,7 +100,7 @@ function ProductPage() {
           </div>
         )}
       </div>
-      <WhatsAppFab message={product ? `Orçamento para ${product.name}` : undefined} />
+      <QuoteFab message={product ? `Orçamento para ${product.name}` : undefined} />
     </div>
   );
 }
