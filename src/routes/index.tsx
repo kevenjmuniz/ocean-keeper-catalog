@@ -18,7 +18,7 @@ import {
   PaginationPrevious,
   PaginationEllipsis,
 } from "@/components/ui/pagination";
-import mascoteImg from "@/assets/mascote-m2i.png";
+
 
 const PAGE_SIZE = 18;
 
