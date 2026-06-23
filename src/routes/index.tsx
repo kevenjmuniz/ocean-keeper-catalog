@@ -148,13 +148,6 @@ function CatalogHome() {
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
-      {/* Decorative mascot watermark */}
-      <img
-        src={mascoteImg}
-        alt=""
-        aria-hidden="true"
-        className="pointer-events-none select-none fixed top-20 -right-16 sm:-right-20 lg:right-0 h-[60vh] sm:h-[75vh] lg:h-[88vh] w-auto opacity-[0.06] sm:opacity-[0.09] lg:opacity-[0.11] z-0"
-      />
       <SiteHeader query={query} onQueryChange={setQuery} />
 
       {/* Mobile category filter trigger */}
