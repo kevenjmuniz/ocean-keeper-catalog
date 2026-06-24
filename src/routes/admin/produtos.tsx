@@ -93,7 +93,7 @@ type Product = {
   gallery_images?: string[] | null;
   is_featured?: boolean;
   is_active?: boolean;
-  
+  is_available?: boolean;
 };
 
 function AdminProducts() {
@@ -129,7 +129,7 @@ function AdminProducts() {
     );
   });
 
-  const startNew = () => { setEditing({ name: "", is_active: true, is_featured: false }); setOpen(true); };
+  const startNew = () => { setEditing({ name: "", is_active: true, is_available: true, is_featured: false }); setOpen(true); };
   const startEdit = (p: any) => { setEditing(p); setOpen(true); };
 
   const toggleActive = async (p: any) => {
@@ -238,11 +238,11 @@ function ProductDialog({
   categories: { id: string; name: string }[];
   onSaved: () => void;
 }) {
-  const [form, setForm] = useState<Product>(editing ?? { name: "", is_active: true });
+  const [form, setForm] = useState<Product>(editing ?? { name: "", is_active: true, is_available: true });
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (open) setForm(editing ?? { name: "", is_active: true });
+    if (open) setForm(editing ?? { name: "", is_active: true, is_available: true });
   }, [open, editing]);
 
   const set = <K extends keyof Product>(k: K, v: Product[K]) => setForm({ ...form, [k]: v });
@@ -273,6 +273,7 @@ function ProductDialog({
         image_url: form.image_url ?? null,
         gallery_images: form.gallery_images ?? [],
         is_active: !!form.is_active,
+        is_available: form.is_available !== false,
         is_featured: !!form.is_featured,
       };
       if (form.id) {
@@ -389,14 +390,20 @@ function ProductDialog({
             )}
             <p className="mt-1 text-xs text-muted-foreground">A imagem principal continua sendo a capa. As extras aparecem no carrossel da página do produto.</p>
           </div>
-          <div className="flex items-center gap-6">
+          <div className="flex flex-wrap items-center gap-6">
             <label className="flex items-center gap-2 text-sm">
               <Switch checked={!!form.is_active} onCheckedChange={(v) => set("is_active", v)} /> Ativo
+            </label>
+            <label className="flex items-center gap-2 text-sm">
+              <Switch checked={form.is_available !== false} onCheckedChange={(v) => set("is_available", v)} /> Disponível
             </label>
             <label className="flex items-center gap-2 text-sm">
               <Switch checked={!!form.is_featured} onCheckedChange={(v) => set("is_featured", v)} /> Destaque
             </label>
           </div>
+          <p className="-mt-2 text-xs text-muted-foreground">
+            "Ativo" controla se o produto aparece no catálogo. "Disponível" mantém o produto visível, mas marcado como indisponível no momento (sem estoque).
+          </p>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
             <Button type="submit" disabled={saving} className="bg-primary">{saving ? "Salvando..." : "Salvar"}</Button>
