@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { MessageCircle } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { Button, type ButtonProps } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -11,21 +11,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { getActiveSellers, type PublicSeller } from "@/lib/sellers.functions";
 
-type Seller = { id: string; name: string; phone: string };
+type Seller = PublicSeller;
 
 function useSellers() {
+  const fetchSellers = useServerFn(getActiveSellers);
   return useQuery({
     queryKey: ["sellers-active"],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("sellers")
-        .select("id, name, phone")
-        .eq("is_active", true)
-        .order("sort_order")
-        .order("name");
-      return (data ?? []) as Seller[];
-    },
+    queryFn: () => fetchSellers(),
     staleTime: 60_000,
   });
 }
