@@ -201,8 +201,17 @@
   }
 }
 
+/* Logo Bom Marujo — breathing animation for loading */
+@keyframes logo-breathe {
+  0%, 100% { opacity: 0.55; transform: scale(0.98); }
+  50% { opacity: 1; transform: scale(1.02); }
+}
+.logo-breathe {
+  animation: logo-breathe 2.4s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .animate-card-in, .animate-soft-fade, .animate-fade-up, .animate-float {
+  .animate-card-in, .animate-soft-fade, .animate-fade-up, .animate-float, .logo-breathe {
     animation: none !important;
   }
 }
