@@ -6,6 +6,8 @@ import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { SiteHeader } from "@/components/SiteHeader";
 import { QuoteFab } from "@/components/QuoteButton";
+import { LogoLoading } from "@/components/LogoLoading";
+import { LogoWatermark } from "@/components/LogoWatermark";
 import { ProductCard, type ProductCardData } from "@/components/ProductCard";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -146,9 +148,19 @@ function CatalogHome() {
     pageNumbers.push(totalPages);
   }
 
+  if (productsQuery.isLoading && !products.length) {
+    return (
+      <div className="min-h-screen bg-background relative overflow-hidden">
+        <SiteHeader query={query} onQueryChange={setQuery} />
+        <LogoLoading message="Carregando catálogo..." />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
       <SiteHeader query={query} onQueryChange={setQuery} />
+      <LogoWatermark />
 
       {/* Mobile category filter trigger */}
       <div className="border-b border-border/60 bg-background/60 lg:hidden">
