@@ -148,9 +148,19 @@ function CatalogHome() {
     pageNumbers.push(totalPages);
   }
 
+  if (productsQuery.isLoading && !products.length) {
+    return (
+      <div className="min-h-screen bg-background relative overflow-hidden">
+        <SiteHeader query={query} onQueryChange={setQuery} />
+        <LogoLoading message="Carregando catálogo..." />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
       <SiteHeader query={query} onQueryChange={setQuery} />
+      <LogoWatermark />
 
       {/* Mobile category filter trigger */}
       <div className="border-b border-border/60 bg-background/60 lg:hidden">
