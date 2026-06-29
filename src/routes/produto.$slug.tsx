@@ -5,6 +5,8 @@ import { ArrowLeft, ChevronLeft, ChevronRight, Snowflake, X } from "lucide-react
 import { supabase } from "@/integrations/supabase/client";
 import { SiteHeader } from "@/components/SiteHeader";
 import { QuoteFab, QuoteButton } from "@/components/QuoteButton";
+import { LogoLoading } from "@/components/LogoLoading";
+import { LogoWatermark } from "@/components/LogoWatermark";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { formatBRL } from "@/lib/format";
