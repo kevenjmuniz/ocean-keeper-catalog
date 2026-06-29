@@ -6,6 +6,8 @@ import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { SiteHeader } from "@/components/SiteHeader";
 import { QuoteFab } from "@/components/QuoteButton";
+import { LogoLoading } from "@/components/LogoLoading";
+import { LogoWatermark } from "@/components/LogoWatermark";
 import { ProductCard, type ProductCardData } from "@/components/ProductCard";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
