@@ -33,15 +33,25 @@ function ProductPage() {
 
   if (!isLoading && !product) throw notFound();
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <SiteHeader />
+        <LogoLoading message="Carregando produto..." />
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background relative">
       <SiteHeader />
-      <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
+      <LogoWatermark />
+      <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8 relative z-10">
         <Link to="/" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground">
           <ArrowLeft className="mr-1 h-4 w-4" /> Voltar ao catálogo
         </Link>
 
-        {isLoading || !product ? (
+        {!product ? (
           <div className="mt-8 grid animate-pulse gap-10 lg:grid-cols-2">
             <div className="aspect-square rounded-3xl bg-muted" />
             <div className="space-y-4">
