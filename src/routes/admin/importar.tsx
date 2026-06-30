@@ -147,11 +147,16 @@ function ImportPage() {
       const pesoRaw = String(r.peso_cx ?? "").trim().replace(",", ".");
       const peso_cx = pesoRaw ? Number(pesoRaw) : null;
       const categoriaRaw = String(r.categoria ?? "").trim();
+      const estoqueRaw = String(r.estoque ?? "").trim().replace(",", ".");
+      const estoque = estoqueRaw ? Number(estoqueRaw) : null;
 
       if (!codigo) { pushErr(linha, "", descricao, "codigo vazio"); continue; }
       if (!descricao) { pushErr(linha, codigo, "", "descricao vazia"); continue; }
       if (peso_cx !== null && Number.isNaN(peso_cx)) {
         pushErr(linha, codigo, descricao, `peso_cx inválido ("${pesoRaw}")`); continue;
+      }
+      if (estoque !== null && Number.isNaN(estoque)) {
+        pushErr(linha, codigo, descricao, `estoque inválido ("${estoqueRaw}")`); continue;
       }
 
       let category_id: string | null = null;
