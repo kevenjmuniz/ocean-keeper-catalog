@@ -282,6 +282,7 @@ function ProductDialog({
         is_active: !!form.is_active,
         is_available: form.is_available !== false,
         is_featured: !!form.is_featured,
+        stock_quantity: Number.isFinite(Number(form.stock_quantity)) ? Math.max(0, Math.trunc(Number(form.stock_quantity))) : 0,
       };
       if (form.id) {
         const { error } = await supabase.from("products").update(payload).eq("id", form.id);
