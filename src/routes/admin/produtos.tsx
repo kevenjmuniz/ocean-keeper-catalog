@@ -182,6 +182,7 @@ function AdminProducts() {
               <th className="px-4 py-3 text-left">Categoria</th>
               <th className="px-4 py-3 text-left">Caixa</th>
               <th className="px-4 py-3 text-left">Código</th>
+              <th className="px-4 py-3 text-center">Estoque</th>
               <th className="px-4 py-3 text-center">Ativo</th>
               <th className="px-4 py-3 text-right">Ações</th>
             </tr>
