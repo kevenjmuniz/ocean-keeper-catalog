@@ -348,7 +348,7 @@ function ProductDialog({
               <Label>Quantidade em estoque</Label>
               <Input
                 type="number"
-                step="1"
+                step="0.001"
                 min="0"
                 value={form.stock_quantity ?? 0}
                 onChange={(e) => set("stock_quantity", e.target.value as any)}
