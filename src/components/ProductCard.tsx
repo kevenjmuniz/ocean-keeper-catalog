@@ -13,6 +13,7 @@ export type ProductCardData = {
   internal_code?: string | null;
   image_url?: string | null;
   is_available?: boolean | null;
+  stock_quantity?: number | null;
   category?: { name: string } | null;
 };
 
