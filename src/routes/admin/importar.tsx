@@ -214,10 +214,10 @@ function ImportPage() {
 
   const downloadTemplate = () => {
     const csv =
-      "codigo,descricao,unidade,peso_cx,categoria\n" +
-      "100088,PESCADA-MARIA-MOLE G,PCT 5 KG,15,FILÉS\n" +
-      "353550,CAM. SANTANA DESC. EVISC. 50/60,PCT 5 KG,15,CAMARÕES\n" +
-      "293000,LULA EM ANÉIS IQF,A GRANEL,10,MOLUSCOS\n";
+      "codigo,descricao,unidade,peso_cx,categoria,estoque\n" +
+      "100088,PESCADA-MARIA-MOLE G,PCT 5 KG,15,FILÉS,50\n" +
+      "353550,CAM. SANTANA DESC. EVISC. 50/60,PCT 5 KG,15,CAMARÕES,12.5\n" +
+      "293000,LULA EM ANÉIS IQF,A GRANEL,10,MOLUSCOS,8.75\n";
     const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
