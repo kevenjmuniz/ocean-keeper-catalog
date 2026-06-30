@@ -40,7 +40,7 @@ export const Route = createFileRoute("/admin/produtos")({
 function buildRows(rows: any[]) {
   const cols = [
     "name", "slug", "category", "internal_code",
-    "weight_kg", "unit", "is_featured", "description",
+    "weight_kg", "unit", "stock_quantity", "is_featured", "description",
   ];
   const data = rows.map((r) => {
     const o: Record<string, any> = {};
@@ -94,6 +94,7 @@ type Product = {
   is_featured?: boolean;
   is_active?: boolean;
   is_available?: boolean;
+  stock_quantity?: number | null;
 };
 
 function AdminProducts() {
@@ -181,6 +182,7 @@ function AdminProducts() {
               <th className="px-4 py-3 text-left">Categoria</th>
               <th className="px-4 py-3 text-left">Caixa</th>
               <th className="px-4 py-3 text-left">Código</th>
+              <th className="px-4 py-3 text-center">Estoque</th>
               <th className="px-4 py-3 text-center">Ativo</th>
               <th className="px-4 py-3 text-right">Ações</th>
             </tr>
@@ -203,6 +205,11 @@ function AdminProducts() {
                 <td className="px-4 py-3">{p.weight_kg ? `${p.weight_kg} kg` : "—"}</td>
                 <td className="px-4 py-3 font-mono text-xs">{p.internal_code ?? "—"}</td>
                 <td className="px-4 py-3 text-center">
+                  <span className={`inline-flex min-w-[2.5rem] justify-center rounded-md px-2 py-1 text-xs font-medium ${(p.stock_quantity ?? 0) > 0 ? "bg-emerald-500/10 text-emerald-700" : "bg-muted text-muted-foreground"}`}>
+                    {p.stock_quantity ?? 0}
+                  </span>
+                </td>
+                <td className="px-4 py-3 text-center">
                   <Switch checked={p.is_active} onCheckedChange={() => toggleActive(p)} />
                 </td>
                 <td className="px-4 py-3 text-right">
@@ -212,7 +219,7 @@ function AdminProducts() {
               </tr>
             ))}
             {filtered.length === 0 && (
-              <tr><td colSpan={6} className="px-4 py-12 text-center text-muted-foreground">Nenhum produto.</td></tr>
+              <tr><td colSpan={7} className="px-4 py-12 text-center text-muted-foreground">Nenhum produto.</td></tr>
             )}
           </tbody>
         </table>
@@ -275,6 +282,7 @@ function ProductDialog({
         is_active: !!form.is_active,
         is_available: form.is_available !== false,
         is_featured: !!form.is_featured,
+        stock_quantity: Number.isFinite(Number(form.stock_quantity)) ? Math.max(0, Math.trunc(Number(form.stock_quantity))) : 0,
       };
       if (form.id) {
         const { error } = await supabase.from("products").update(payload).eq("id", form.id);
@@ -335,6 +343,16 @@ function ProductDialog({
             <div>
               <Label>Preço (opcional)</Label>
               <Input type="number" step="0.01" value={form.price ?? ""} onChange={(e) => set("price", e.target.value as any)} />
+            </div>
+            <div>
+              <Label>Quantidade em estoque</Label>
+              <Input
+                type="number"
+                step="1"
+                min="0"
+                value={form.stock_quantity ?? 0}
+                onChange={(e) => set("stock_quantity", e.target.value as any)}
+              />
             </div>
           </div>
           <div>

@@ -95,6 +95,7 @@ export type Database = {
           name: string
           price: number | null
           slug: string
+          stock_quantity: number
           subcategory: string | null
           unit: string | null
           updated_at: string
@@ -114,6 +115,7 @@ export type Database = {
           name: string
           price?: number | null
           slug: string
+          stock_quantity?: number
           subcategory?: string | null
           unit?: string | null
           updated_at?: string
@@ -133,6 +135,7 @@ export type Database = {
           name?: string
           price?: number | null
           slug?: string
+          stock_quantity?: number
           subcategory?: string | null
           unit?: string | null
           updated_at?: string
