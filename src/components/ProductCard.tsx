@@ -68,6 +68,17 @@ export function ProductCard({ p, index = 0 }: { p: ProductCardData; index?: numb
             {p.internal_code && (
               <span className="rounded-md bg-muted px-2 py-1 font-mono">Cód. {p.internal_code}</span>
             )}
+            {typeof p.stock_quantity === "number" && (
+              <span
+                className={`rounded-md px-2 py-1 font-medium ${
+                  p.stock_quantity > 0
+                    ? "bg-emerald-500/10 text-emerald-700"
+                    : "bg-muted text-muted-foreground"
+                }`}
+              >
+                {p.stock_quantity > 0 ? `${p.stock_quantity} em estoque` : "Sem estoque"}
+              </span>
+            )}
           </div>
         </div>
       </Link>
