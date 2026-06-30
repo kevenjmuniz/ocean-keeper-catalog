@@ -34,9 +34,9 @@ export const Route = createFileRoute("/")({
   validateSearch: searchSchema,
   head: () => ({
     meta: [
-      { title: "CatÃ¡logo M2i â€” Pescados congelados premium" },
-      { name: "description", content: "CatÃ¡logo digital B2B de pescados congelados M2i. Busca instantÃ¢nea, filtros por categoria e cotaÃ§Ã£o rÃ¡pida via WhatsApp." },
-      { property: "og:title", content: "CatÃ¡logo M2i â€” Pescados Congelados" },
+      { title: "Catálogo M2i — Pescados congelados premium" },
+      { name: "description", content: "Catálogo digital B2B de pescados congelados M2i. Busca instantânea, filtros por categoria e cotação rápida via WhatsApp." },
+      { property: "og:title", content: "Catálogo M2i — Pescados Congelados" },
       { property: "og:description", content: "Vitrine digital de pescados congelados premium para food service." },
     ],
   }),
@@ -152,7 +152,7 @@ function CatalogHome() {
     return (
       <div className="min-h-screen bg-background relative overflow-hidden">
         <SiteHeader query={query} onQueryChange={setQuery} />
-        <LogoLoading message="Carregando catÃ¡logo..." />
+        <LogoLoading message="Carregando catálogo..." />
       </div>
     );
   }
@@ -241,12 +241,12 @@ function CatalogHome() {
             <div>
               <h1 className="text-xl font-semibold text-foreground sm:text-2xl">
                 {search.category
-                  ? categories?.find((c) => c.slug === search.category)?.name ?? "CatÃ¡logo"
+                  ? categories?.find((c) => c.slug === search.category)?.name ?? "Catálogo"
                   : "Todos os produtos"}
               </h1>
               <p className="text-xs text-muted-foreground mt-0.5">
                 {counts != null ? `${counts} produto${counts === 1 ? "" : "s"}` : "Carregando..."}
-                {debounced && ` â€” buscando "${debounced}"`}
+                {debounced && ` — buscando "${debounced}"`}
               </p>
             </div>
           </div>
@@ -347,4 +347,3 @@ function SidebarItem({ label, active, onClick }: { label: string; active: boolea
     </button>
   );
 }
-
