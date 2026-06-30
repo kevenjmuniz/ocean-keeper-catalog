@@ -14,7 +14,7 @@ export const Route = createFileRoute("/admin/importar")({
 });
 
 const REQUIRED_COLUMNS = ["codigo", "descricao", "unidade", "peso_cx"] as const;
-const OPTIONAL_COLUMNS = ["categoria"] as const;
+const OPTIONAL_COLUMNS = ["categoria", "estoque"] as const;
 
 const normalizeCategoryName = (s: string) =>
   s.trim().replace(/\s+/g, " ").toLocaleUpperCase("pt-BR");
