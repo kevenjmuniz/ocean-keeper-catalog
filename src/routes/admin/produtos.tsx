@@ -94,6 +94,7 @@ type Product = {
   is_featured?: boolean;
   is_active?: boolean;
   is_available?: boolean;
+  stock_quantity?: number | null;
 };
 
 function AdminProducts() {
