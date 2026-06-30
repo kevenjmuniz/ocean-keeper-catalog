@@ -169,12 +169,13 @@ function ImportPage() {
 
       const found = codeMap.get(codigo);
       if (found) {
-        const updatePayload = {
+        const updatePayload: any = {
           name: descricao,
           unit: unidade,
           weight_kg: peso_cx,
           is_active: true,
           ...(category_id ? { category_id } : {}),
+          ...(estoque !== null ? { stock_quantity: estoque } : {}),
         };
         const { error } = await supabase
           .from("products")
