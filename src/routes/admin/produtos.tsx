@@ -206,7 +206,7 @@ function AdminProducts() {
                 <td className="px-4 py-3 font-mono text-xs">{p.internal_code ?? "—"}</td>
                 <td className="px-4 py-3 text-center">
                   <span className={`inline-flex min-w-[2.5rem] justify-center rounded-md px-2 py-1 text-xs font-medium ${(p.stock_quantity ?? 0) > 0 ? "bg-emerald-500/10 text-emerald-700" : "bg-muted text-muted-foreground"}`}>
-                    {p.stock_quantity ?? 0}
+                    {Number(p.stock_quantity ?? 0).toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 3 })} kg
                   </span>
                 </td>
                 <td className="px-4 py-3 text-center">
@@ -345,7 +345,7 @@ function ProductDialog({
               <Input type="number" step="0.01" value={form.price ?? ""} onChange={(e) => set("price", e.target.value as any)} />
             </div>
             <div>
-              <Label>Quantidade em estoque</Label>
+              <Label>Quantidade em estoque (kg)</Label>
               <Input
                 type="number"
                 step="0.001"
