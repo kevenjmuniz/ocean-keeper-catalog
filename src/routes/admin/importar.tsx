@@ -193,6 +193,7 @@ function ImportPage() {
           weight_kg: peso_cx,
           is_active: true,
           category_id,
+          ...(estoque !== null ? { stock_quantity: estoque } : {}),
         });
         if (error) pushErr(linha, codigo, descricao, error.message);
         else { created++; createdItems.push({ codigo, descricao }); }
