@@ -77,7 +77,7 @@ export function ProductCard({ p, index = 0 }: { p: ProductCardData; index?: numb
                 }`}
               >
                 {Number(p.stock_quantity) > 0
-                  ? `${Number(p.stock_quantity).toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 3 })} em estoque`
+                  ? `${Number(p.stock_quantity).toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 3 })} kg em estoque`
                   : "Sem estoque"}
               </span>
             )}
