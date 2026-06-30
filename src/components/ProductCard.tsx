@@ -71,12 +71,14 @@ export function ProductCard({ p, index = 0 }: { p: ProductCardData; index?: numb
             {typeof p.stock_quantity === "number" && (
               <span
                 className={`rounded-md px-2 py-1 font-medium ${
-                  p.stock_quantity > 0
+                  Number(p.stock_quantity) > 0
                     ? "bg-emerald-500/10 text-emerald-700"
                     : "bg-muted text-muted-foreground"
                 }`}
               >
-                {p.stock_quantity > 0 ? `${p.stock_quantity} em estoque` : "Sem estoque"}
+                {Number(p.stock_quantity) > 0
+                  ? `${Number(p.stock_quantity).toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 3 })} em estoque`
+                  : "Sem estoque"}
               </span>
             )}
           </div>

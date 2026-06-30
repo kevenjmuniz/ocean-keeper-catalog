@@ -282,7 +282,7 @@ function ProductDialog({
         is_active: !!form.is_active,
         is_available: form.is_available !== false,
         is_featured: !!form.is_featured,
-        stock_quantity: Number.isFinite(Number(form.stock_quantity)) ? Math.max(0, Math.trunc(Number(form.stock_quantity))) : 0,
+        stock_quantity: Number.isFinite(Number(form.stock_quantity)) ? Math.max(0, Number(form.stock_quantity)) : 0,
       };
       if (form.id) {
         const { error } = await supabase.from("products").update(payload).eq("id", form.id);
@@ -348,7 +348,7 @@ function ProductDialog({
               <Label>Quantidade em estoque</Label>
               <Input
                 type="number"
-                step="1"
+                step="0.001"
                 min="0"
                 value={form.stock_quantity ?? 0}
                 onChange={(e) => set("stock_quantity", e.target.value as any)}

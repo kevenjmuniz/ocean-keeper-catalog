@@ -14,7 +14,7 @@ export const Route = createFileRoute("/admin/importar")({
 });
 
 const REQUIRED_COLUMNS = ["codigo", "descricao", "unidade", "peso_cx"] as const;
-const OPTIONAL_COLUMNS = ["categoria"] as const;
+const OPTIONAL_COLUMNS = ["categoria", "estoque"] as const;
 
 const normalizeCategoryName = (s: string) =>
   s.trim().replace(/\s+/g, " ").toLocaleUpperCase("pt-BR");
@@ -147,11 +147,16 @@ function ImportPage() {
       const pesoRaw = String(r.peso_cx ?? "").trim().replace(",", ".");
       const peso_cx = pesoRaw ? Number(pesoRaw) : null;
       const categoriaRaw = String(r.categoria ?? "").trim();
+      const estoqueRaw = String(r.estoque ?? "").trim().replace(",", ".");
+      const estoque = estoqueRaw ? Number(estoqueRaw) : null;
 
       if (!codigo) { pushErr(linha, "", descricao, "codigo vazio"); continue; }
       if (!descricao) { pushErr(linha, codigo, "", "descricao vazia"); continue; }
       if (peso_cx !== null && Number.isNaN(peso_cx)) {
         pushErr(linha, codigo, descricao, `peso_cx inválido ("${pesoRaw}")`); continue;
+      }
+      if (estoque !== null && Number.isNaN(estoque)) {
+        pushErr(linha, codigo, descricao, `estoque inválido ("${estoqueRaw}")`); continue;
       }
 
       let category_id: string | null = null;
@@ -164,12 +169,13 @@ function ImportPage() {
 
       const found = codeMap.get(codigo);
       if (found) {
-        const updatePayload = {
+        const updatePayload: any = {
           name: descricao,
           unit: unidade,
           weight_kg: peso_cx,
           is_active: true,
           ...(category_id ? { category_id } : {}),
+          ...(estoque !== null ? { stock_quantity: estoque } : {}),
         };
         const { error } = await supabase
           .from("products")
@@ -187,6 +193,7 @@ function ImportPage() {
           weight_kg: peso_cx,
           is_active: true,
           category_id,
+          ...(estoque !== null ? { stock_quantity: estoque } : {}),
         });
         if (error) pushErr(linha, codigo, descricao, error.message);
         else { created++; createdItems.push({ codigo, descricao }); }
@@ -207,10 +214,10 @@ function ImportPage() {
 
   const downloadTemplate = () => {
     const csv =
-      "codigo,descricao,unidade,peso_cx,categoria\n" +
-      "100088,PESCADA-MARIA-MOLE G,PCT 5 KG,15,FILÉS\n" +
-      "353550,CAM. SANTANA DESC. EVISC. 50/60,PCT 5 KG,15,CAMARÕES\n" +
-      "293000,LULA EM ANÉIS IQF,A GRANEL,10,MOLUSCOS\n";
+      "codigo,descricao,unidade,peso_cx,categoria,estoque\n" +
+      "100088,PESCADA-MARIA-MOLE G,PCT 5 KG,15,FILÉS,50\n" +
+      "353550,CAM. SANTANA DESC. EVISC. 50/60,PCT 5 KG,15,CAMARÕES,12.5\n" +
+      "293000,LULA EM ANÉIS IQF,A GRANEL,10,MOLUSCOS,8.75\n";
     const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
